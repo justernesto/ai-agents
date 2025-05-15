@@ -1,6 +1,5 @@
 services:
-  - type: web_service
-    name: ai-agent
+  - name: ai-agent
     env: docker
     dockerfilePath: Dockerfile
     branch: main
