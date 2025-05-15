@@ -1,5 +1,5 @@
 services:
-  - type: service
+  - type: web
     name: ai-agent
     env: docker
     dockerfilePath: Dockerfile
