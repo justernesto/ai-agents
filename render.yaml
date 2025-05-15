@@ -1,5 +1,6 @@
 services:
-  - name: ai-agent
+  - type: service
+    name: ai-agent
     env: docker
     dockerfilePath: Dockerfile
     branch: main
