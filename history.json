@@ -1,0 +1,54 @@
+[
+    {
+        "role": "user",
+        "content": "H"
+    },
+    {
+        "role": "assistant",
+        "content": "Assistant:  Is there something I can help you with?\n"
+    },
+    {
+        "role": "assistant",
+        "content": "Wiki: George Washington's tenure as the inaugural president of the United States began on April 30, 1789, the day of his first inauguration, and ended on March 4, 1797. Washington took office after he was elected unanimously by the Electoral College in the 1788\u20131789 presidential election, the nation's first quadrennial presidential election."
+    },
+    {
+        "role": "user",
+        "content": "Hello there!"
+    },
+    {
+        "role": "user",
+        "content": "Hello there, can we talk about API's"
+    },
+    {
+        "role": "user",
+        "content": "Hello there"
+    },
+    {
+        "role": "assistant",
+        "content": "Hello there!  Yes, let's talk about APIs. What specifically about APIs are you interested in discussing?  For example, are you interested in:\n\n* **Specific API types?** (e.g., REST, GraphQL, SOAP)\n* **API design and architecture?**\n* **API security?**\n* **Using a particular API?** (If so, which one?)\n* **Building your own API?**\n* **API documentation?**\n\nThe more detail you provide, the better I can help you.\n"
+    },
+    {
+        "role": "user",
+        "content": "I like dogs"
+    },
+    {
+        "role": "assistant",
+        "content": "That's nice!  Dogs are wonderful.  Is there anything else I can help you with today?  Perhaps we can get back to talking about APIs if you'd like.\n"
+    },
+    {
+        "role": "user",
+        "content": "Specifically I like black dogs"
+    },
+    {
+        "role": "assistant",
+        "content": "That's interesting!  Black dogs are beautiful.  However, we were talking about APIs before.  Would you like to return to that topic, or is there something else you'd like to discuss about black dogs?\n"
+    },
+    {
+        "role": "user",
+        "content": "do you rememeber which kind of dogs i like?"
+    },
+    {
+        "role": "assistant",
+        "content": "You mentioned you like black dogs.\n"
+    }
+]
