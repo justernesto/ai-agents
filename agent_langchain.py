@@ -51,16 +51,15 @@ agent = initialize_agent(
     memory=memory,
 )
 
-# --- Main Loop ---
-def main():
-    print("🤖 LangChain Gemini Agent. Type 'exit' or 'quit' to stop.")
-    while True:
-        user_input = input("You: ").strip()
-        if user_input.lower() in ("exit", "quit"):
-            print("👋 Goodbye!")
-            break
-        result = agent.run(user_input)
-        print(f"Agent: {result}")
+from fastapi import FastAPI
+from pydantic import BaseModel
 
-if __name__ == "__main__":
-    main()
+app = FastAPI()
+
+class ChatRequest(BaseModel):
+    message: str
+
+@app.post("/chat")
+async def chat_endpoint(req: ChatRequest):
+    reply = agent.run(req.message)
+    return {"reply": reply}

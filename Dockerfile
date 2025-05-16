@@ -19,4 +19,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Default command to start the agent
-ENTRYPOINT ["python", "agent_langchain.py"]
+ENTRYPOINT ["uvicorn", "agent_langchain:app", "--host", "0.0.0.0", "--port", "8000"]
