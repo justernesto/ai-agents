@@ -63,3 +63,7 @@ class ChatRequest(BaseModel):
 async def chat_endpoint(req: ChatRequest):
     reply = agent.run(req.message)
     return {"reply": reply}
+
+@app.get("/")
+async def healthcheck():
+    return {"status": "ok"}
