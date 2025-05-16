@@ -6,4 +6,4 @@ services:
     branch: main
     envVars:
       - key: GEMINI_API_KEY
-        fromSecret: GEMINI_API_KEY
+        value: AIzaSyA29vcAOnNvOLqNfMVB8K_esDmfaaAsqts
