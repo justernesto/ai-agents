@@ -21,7 +21,7 @@ export default function Page() {
       const data = await res.json();
       const botMsg = { sender: "Agent", text: data.reply };
       setChatLog((prev) => [...prev, botMsg]);
-    } catch (err) {
+    } catch {
       setChatLog((prev) => [
         ...prev,
         { sender: "Agent", text: "⚠️ Error contacting API." },
