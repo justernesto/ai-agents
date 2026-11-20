@@ -19,6 +19,12 @@ Created by Ernesto Cardenas to explore how AI can help IT operations teams find 
 
 Use fictional tickets and sample data. The assistant provides guidance that a technician reviews and applies, and cites the runbook used for the reply.
 
+## Runbook library
+
+Use **Reference runbooks** to search by symptom or filter by topic. Each guide includes checks to establish scope, distinguish likely causes, verify recovery, and record evidence for the next owner. The library covers network and VPN issues, identity and access, endpoints and mobile devices, remote desktops, mail and collaboration, file storage and sharing, business applications, security reports, and incident operations.
+
+The [shared catalog](chat-ui/src/lib/runbooks.json) supplies the browser demo, API, and terminal. Specific symptom phrases take priority over broad terms, and explicit handoff requests open the shift handoff guide.
+
 ## Run locally
 
 Start the Next.js workspace from the repository root with Node.js 22 or later. The built-in demo runs entirely in the browser.
@@ -57,7 +63,7 @@ python agent.py
 
 ## How it works
 
-- **Browser demo.** A shared [runbook catalog](chat-ui/src/lib/runbooks.json) powers both the browser demo and the backend. Built-in responses make common scenarios quick to try and easy to compare.
+- **Browser demo.** The browser selects from the catalog locally and renders the selected guide’s checks and handoff details.
 - **Gemini mode.** For a supported issue, the API sends the current prompt and up to two recent user messages to Gemini to rank the checks from the selected runbook. The backend validates the order and renders the original runbook text. If the provider fails, the backend uses the runbook's default order. Each reply reports the mode used.
 - **Conversation scope.** The client sends a bounded recent history for context. Each API request carries its own history, so one visitor’s conversation can’t become part of another visitor’s reply.
 - **Review boundary.** The prototype proposes checks and documents decisions. A technician applies any changes using their organization’s tools and procedures.

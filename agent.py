@@ -32,7 +32,7 @@ async def main():
             print((await answer(message, [], settings, provider)).reply)
             return
 
-        print("Ops Copilot. Ask about connectivity, DNS, MFA, or a handoff.")
+        print("Ops Copilot. Describe an IT support issue or ask for a ticket handoff.")
         print("Use /clear_history to start fresh or /exit to leave.")
         history = []
         while True:

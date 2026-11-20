@@ -6,14 +6,19 @@ import {
   browserReply,
   MAX_HISTORY_MESSAGES,
   MAX_MESSAGE_LENGTH,
+  normalize,
   runbooks,
+  samples,
 } from "./demo";
 import type { ConversationMessage, Mode, Reply, Runbook } from "./demo";
 
 const apiUrl = (process.env.NEXT_PUBLIC_OPS_API_URL || "https://ops-copilot-api.vercel.app").trim().replace(/\/+$/, "");
 const repoUrl = "https://github.com/justernesto/ai-agents";
-const sampleIds = ["connectivity", "dns", "identity", "handoff"];
-const samples = sampleIds.flatMap((id) => runbooks.find((runbook) => runbook.id === id) ?? []);
+const runbookCategories = [...new Set(runbooks.map(({ category }) => category))].sort();
+const searchableRunbooks = runbooks.map((runbook) => ({
+  runbook,
+  text: normalize([runbook.title, runbook.summary, ...runbook.keywords].join(" ")),
+}));
 
 type Turn = {
   question: string;
@@ -61,12 +66,22 @@ export default function Page() {
   const [pending, setPending] = useState(false);
   const [connection, setConnection] = useState<Connection>("browser");
   const [connectionError, setConnectionError] = useState("");
+  const [runbookQuery, setRunbookQuery] = useState("");
+  const [runbookCategory, setRunbookCategory] = useState("");
   const [openRunbook, setOpenRunbook] = useState<Runbook | null>(null);
   const request = useRef<AbortController | null>(null);
   const connectionCheck = useRef<AbortController | null>(null);
   const composer = useRef<HTMLTextAreaElement>(null);
   const latest = useRef<HTMLDivElement>(null);
   const modal = useRef<HTMLDialogElement>(null);
+
+  const searchTerms = normalize(runbookQuery).split(" ").filter(Boolean);
+  const visibleRunbooks = searchableRunbooks
+    .filter(({ runbook, text }) =>
+      (!runbookCategory || runbook.category === runbookCategory) &&
+      searchTerms.every((term) => text.includes(term)),
+    )
+    .map(({ runbook }) => runbook);
 
   useEffect(() => {
     if (turns.length) latest.current?.scrollIntoView({ block: "nearest" });
@@ -311,16 +326,42 @@ export default function Page() {
         <aside className="sidebar" aria-label="References and session settings">
           <section className="panel reference-panel" aria-labelledby="runbook-heading">
             <h2 id="runbook-heading">Reference runbooks</h2>
-            <p>Open a guide to see its checks and handoff criteria.</p>
-            <div className="runbook-list">
-              {samples.map((runbook) => (
-                <button type="button" className="runbook-button" key={runbook.id} onClick={() => setOpenRunbook(runbook)}>
-                  <span className="runbook-code" aria-hidden="true">{runbook.code}</span>
-                  <span>{runbook.title}</span>
-                  <span className="runbook-open" aria-hidden="true">+</span>
-                </button>
-              ))}
+            <div className="runbook-filters">
+              <label className="sr-only" htmlFor="runbook-search">Search runbooks</label>
+              <input
+                id="runbook-search"
+                type="search"
+                value={runbookQuery}
+                onChange={(event) => setRunbookQuery(event.target.value)}
+                placeholder="Search runbooks"
+              />
+              <label className="sr-only" htmlFor="runbook-category">Filter by topic</label>
+              <select
+                id="runbook-category"
+                value={runbookCategory}
+                onChange={(event) => setRunbookCategory(event.target.value)}
+              >
+                <option value="">All topics</option>
+                {runbookCategories.map((category) => <option key={category}>{category}</option>)}
+              </select>
             </div>
+            <p role="status">
+              {visibleRunbooks.length === 0
+                ? "No runbooks match these filters."
+                : `${visibleRunbooks.length} ${visibleRunbooks.length === 1 ? "runbook" : "runbooks"}`}
+            </p>
+            {visibleRunbooks.length > 0 && (
+              <ul className="runbook-list" aria-label="Matching runbooks">
+                {visibleRunbooks.map((runbook) => (
+                  <li key={runbook.id}>
+                    <button type="button" className="runbook-button" onClick={() => setOpenRunbook(runbook)}>
+                      <span>{runbook.title}</span>
+                      <span className="runbook-open" aria-hidden="true">+</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </section>
 
           <section className="panel session-panel" aria-labelledby="session-heading">
