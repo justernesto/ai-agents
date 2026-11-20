@@ -10,7 +10,7 @@ import {
 } from "./demo";
 import type { ConversationMessage, Mode, Reply, Runbook } from "./demo";
 
-const apiUrl = process.env.NEXT_PUBLIC_OPS_API_URL?.trim().replace(/\/+$/, "");
+const apiUrl = (process.env.NEXT_PUBLIC_OPS_API_URL || "https://ops-copilot-api.vercel.app").trim().replace(/\/+$/, "");
 const repoUrl = "https://github.com/justernesto/ai-agents";
 const sampleIds = ["connectivity", "dns", "identity", "handoff"];
 const samples = sampleIds.flatMap((id) => runbooks.find((runbook) => runbook.id === id) ?? []);
