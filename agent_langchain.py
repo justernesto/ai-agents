@@ -52,7 +52,7 @@ def create_app() -> FastAPI:
             yield
 
     application = FastAPI(
-        title="Ops Copilot", description="IT support triage from four example runbooks.", lifespan=lifespan
+        title="Ops Copilot", description="IT support triage from the shared runbook catalog.", lifespan=lifespan
     )
     application.add_middleware(
         CORSMiddleware,

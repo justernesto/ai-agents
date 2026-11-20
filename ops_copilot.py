@@ -19,9 +19,8 @@ LOGGER = logging.getLogger(__name__)
 CATALOG_PATH = Path(__file__).parent / "chat-ui" / "src" / "lib" / "runbooks.json"
 RUNBOOKS = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
 CLARIFICATION = (
-    "I couldn’t match that to a runbook. I can help with DNS, connectivity, "
-    "sign-in or MFA, and ticket handoffs. What stopped working, and is it affecting "
-    "one user or several?"
+    "I couldn’t match that to a runbook. What service or device stopped working, "
+    "what error do you see, and is one person or a wider group affected?"
 )
 
 
@@ -71,11 +70,14 @@ RUNBOOK_TERMS = [
 def select_runbook(message: str):
     normalized = f" {normalize(message)} "
     selected = None
-    best = 0
+    best = (0, 0)
     for runbook, keywords in RUNBOOK_TERMS:
-        score = sum(1 for keyword in keywords if keyword in normalized)
-        if score and runbook["id"] == "handoff":
+        matches = [keyword for keyword in keywords if keyword in normalized]
+        if not matches:
+            continue
+        if runbook["id"] == "handoff":
             return runbook
+        score = (max(len(keyword.split()) for keyword in matches), len(matches))
         if score > best:
             selected, best = runbook, score
     return selected

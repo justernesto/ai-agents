@@ -21,51 +21,63 @@ export type Reply = {
   sources: Source[];
 };
 
-const scenarios: Record<string, { code: string; scenario: string; prompt: string }> = {
-  connectivity: {
+export const samples = [
+  {
+    id: "connectivity",
     code: "NET",
     scenario: "Office Wi-Fi can’t reach internal apps",
     prompt: "A user on office Wi-Fi can’t reach any internal apps. Where do I start?",
   },
-  dns: {
+  {
+    id: "dns",
     code: "DNS",
     scenario: "An IP works but the hostname fails",
     prompt: "A laptop can reach an internal service by IP, but the hostname fails. What should I check?",
   },
-  identity: {
+  {
+    id: "identity",
     code: "MFA",
     scenario: "A replacement phone blocks sign-in",
     prompt: "A user replaced their phone and can’t complete MFA. How should I triage it safely?",
   },
-  handoff: {
+  {
+    id: "handoff",
     code: "TKT",
     scenario: "An unresolved incident needs a handoff",
     prompt: "Help me prepare a handoff for an unresolved site connectivity issue.",
   },
-};
+];
 
-export const runbooks = catalog.map((runbook) => ({ ...runbook, ...scenarios[runbook.id] }));
+export const runbooks = catalog;
 export type Runbook = (typeof runbooks)[number];
 
-function normalized(text: string): string {
-  return ` ${text.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim()} `;
+export function normalize(text: string): string {
+  return text.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 }
 
 const runbookTerms = runbooks.map((runbook) => ({
   runbook,
-  terms: [...new Set(runbook.keywords.map(normalized))],
+  terms: [...new Set(runbook.keywords.map(normalize))].map((term) => ({
+    term: ` ${term} `,
+    length: term.split(" ").length,
+  })),
 }));
 
 function bestMatch(message: string): Runbook | undefined {
-  const input = normalized(message);
+  const input = ` ${normalize(message)} `;
   let match: Runbook | undefined;
-  let bestScore = 0;
+  let bestLength = 0;
+  let bestCount = 0;
   for (const { runbook, terms } of runbookTerms) {
-    const score = terms.filter((term) => input.includes(term)).length;
-    if (score && runbook.id === "handoff") return runbook;
-    if (score > bestScore) {
+    const matches = terms.filter(({ term }) => input.includes(term));
+    if (!matches.length) continue;
+    if (runbook.id === "handoff") return runbook;
+
+    const longest = Math.max(...matches.map(({ length }) => length));
+    if (longest > bestLength || (longest === bestLength && matches.length > bestCount)) {
       match = runbook;
-      bestScore = score;
+      bestLength = longest;
+      bestCount = matches.length;
     }
   }
   return match;
@@ -74,7 +86,7 @@ function bestMatch(message: string): Runbook | undefined {
 export function browserReply(message: string, history: readonly ConversationMessage[]): Reply {
   let runbook = bestMatch(message);
   const followUp = /\b(?:what next|next step|still failing|still broken|it still|same error|already tried|what else)\b/;
-  if (!runbook && followUp.test(normalized(message))) {
+  if (!runbook && followUp.test(normalize(message))) {
     for (const turn of [...history].reverse()) {
       if (turn.role !== "user") continue;
       runbook = bestMatch(turn.content);
@@ -86,7 +98,7 @@ export function browserReply(message: string, history: readonly ConversationMess
     return {
       mode: "demo",
       sources: [],
-      reply: "I couldn’t match that to a runbook. I can help with DNS, connectivity, sign-in or MFA, and ticket handoffs. What stopped working, and is it affecting one user or several?",
+      reply: "I couldn’t match that to a runbook. What service or device stopped working, what error do you see, and is one person or a wider group affected?",
     };
   }
 

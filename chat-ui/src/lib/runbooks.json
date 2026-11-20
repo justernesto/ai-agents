@@ -2,49 +2,2827 @@
   {
     "id": "handoff",
     "title": "Shift handoff",
-    "summary": "Record the impact, the evidence collected, and the next action so the receiving team can pick up the issue.",
-    "keywords": ["handoff", "hand off", "ticket summary", "shift change", "escalation summary", "ticket update", "handover"],
-    "checks": [
-      {"id": "scope", "text": "Record the affected service, approximate start time and time zone, and who is affected."},
-      {"id": "evidence", "text": "Separate observed symptoms from hypotheses. Note the checks already tried and their results."},
-      {"id": "owner", "text": "Record the current owner, the next check, and when the next update is due."}
+    "category": "Incident operations",
+    "summary": "Turn an active ticket into a handoff the receiving technician can understand and act on without repeating the same work.",
+    "keywords": [
+      "handoff",
+      "hand off",
+      "handover",
+      "ticket summary",
+      "shift change",
+      "escalation summary",
+      "ticket update",
+      "incident handover"
     ],
-    "handoff": "Impact: [users or service] · Evidence: [checks and results] · Current owner: [team] · Next action: [check and time]"
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Record the affected service and business task, user or site count, start time and time zone, current impact, and whether there is a functioning workaround."
+      },
+      {
+        "id": "evidence",
+        "text": "Write a short timeline with exact errors, known-good comparisons, applicable changes, and checks already performed. Label hypotheses and state which observations would confirm or rule them out."
+      },
+      {
+        "id": "changes",
+        "text": "Record any workarounds or changes, when they were applied, who owns them, and whether their effect or rollback was verified. Link related incidents and approved change records."
+      },
+      {
+        "id": "owner",
+        "text": "Name the current owner and receiving queue, the specific decision or action you need, and the next update time. For urgent issues, use the incident channel and confirm the receiving owner acknowledged the transfer."
+      },
+      {
+        "id": "validation",
+        "text": "State what a successful retest looks like and who will perform it. For unresolved work, record when the next check will happen and who will update affected users."
+      }
+    ],
+    "handoff": "Use the approved ticket to share impact, timeline, evidence links, current status, workarounds, owner, next action, and update time. Keep credentials and private material out of free-text fields."
   },
   {
     "id": "dns",
     "title": "DNS resolution",
-    "summary": "Separate name resolution from general connectivity and establish which resolver should answer.",
-    "keywords": ["dns", "resolver", "name resolution", "hostname", "nslookup", "nxdomain", "fqdn", "can't resolve", "cannot resolve"],
-    "checks": [
-      {"id": "scope", "text": "Confirm the exact hostname, any error, and whether another approved hostname works from the same device."},
-      {"id": "path", "text": "Check whether the affected device has approved network or VPN connectivity. Internal names may require the corporate network."},
-      {"id": "resolver", "text": "Compare the device’s configured DNS resolver and results with a known working device on the same network. Record any timeouts or name errors."}
+    "category": "Network and connectivity",
+    "summary": "Separate name resolution from general connectivity and identify whether the device, resolver, or record is responsible.",
+    "keywords": [
+      "dns",
+      "dns lookup fails",
+      "name resolution",
+      "resolver",
+      "hostname",
+      "hostname fails",
+      "nslookup",
+      "nxdomain",
+      "fqdn",
+      "cannot resolve",
+      "can t resolve",
+      "ip works but the hostname fails"
     ],
-    "handoff": "Record the hostname, network or VPN state, resolver tested, exact response, and whether a second device sees the same issue."
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Capture the exact hostname, whether a short name or fully qualified name was used, the timestamp, and the application error. Compare a known-good name from the same device and the affected name from a comparable managed device."
+      },
+      {
+        "id": "path",
+        "text": "Confirm the expected network, VPN status, and resolver. Internal names can have different answers or visibility on different networks, so compare only peers in the same access context."
+      },
+      {
+        "id": "query",
+        "text": "Use approved system diagnostics such as Resolve-DnsName or nslookup for the specific reported name and configured resolver. Capture record type and response, distinguishing an answer, NXDOMAIN, no record for the type, SERVFAIL, or timeout."
+      },
+      {
+        "id": "compare",
+        "text": "Compare returned address and freshness with the service owner’s expected record, especially after a migration or change. If lookup works but the workflow fails, collect the app or TLS error for the owner."
+      },
+      {
+        "id": "verify",
+        "text": "Retest the exact hostname in the application from the affected network. Escalate repeatable errors on the expected resolver, conflicting answers between comparable clients, or unavailable corporate resolvers."
+      }
+    ],
+    "handoff": "Record hostname in the approved ticket, network or VPN state, resolver, query type and result, timestamps, recent DNS changes, and a second device’s result."
   },
   {
     "id": "identity",
     "title": "Identity and MFA",
-    "summary": "Find where sign-in fails and follow the approved recovery process for access problems.",
-    "keywords": ["mfa", "sign in", "sign-in", "login", "authenticator", "locked out", "password reset", "verification code", "identity", "authentication", "access denied"],
-    "checks": [
-      {"id": "symptom", "text": "Capture the exact sign-in stage and error. Confirm whether one app or multiple approved services are affected."},
-      {"id": "context", "text": "Ask whether the user changed devices recently and whether the expected sign-in method is still available. Never request a password or MFA code."},
-      {"id": "route", "text": "Use the organization’s identity verification and recovery workflow. Escalate unexpected prompts or unfamiliar sign-in activity through the security channel."}
+    "category": "Identity and access",
+    "summary": "Locate the stage where authentication breaks and use the approved recovery workflow for a verified user.",
+    "keywords": [
+      "mfa",
+      "sign in",
+      "login",
+      "log in",
+      "authenticator",
+      "locked out",
+      "verification code",
+      "authentication",
+      "access denied",
+      "password reset",
+      "replaced their phone",
+      "new phone mfa",
+      "can t sign in",
+      "can't log in",
+      "cannot log in",
+      "log into",
+      "duo push",
+      "password not working"
     ],
-    "handoff": "Record the affected app, error stage, and approved recovery steps attempted. Omit codes, passwords, and personal identifiers."
+    "checks": [
+      {
+        "id": "stage",
+        "text": "Capture the exact prompt and stage in the approved app. Distinguish account discovery, password rejection, an unavailable MFA factor, a post-authentication permission error, and a policy or device requirement."
+      },
+      {
+        "id": "scope",
+        "text": "Compare one affected app with another approved service and note account or tenant context, recent device or password changes, expected MFA method, and whether peers are also affected."
+      },
+      {
+        "id": "safety",
+        "text": "Ask whether the user initiated the prompt. For unsolicited MFA or a suspected compromise, use the security channel. Keep passwords, recovery codes, MFA codes, and session tokens out of requests and ticket text."
+      },
+      {
+        "id": "recovery",
+        "text": "Verify the user through the organization’s approved channel before starting the documented recovery process. Send lockouts, lost factors, or unavailable approved recovery methods to the identity owner."
+      },
+      {
+        "id": "verify",
+        "text": "Confirm the user can sign in to the original service with an expected MFA method and verify access to the intended task. Record whether a policy block or app entitlement still applies."
+      }
+    ],
+    "handoff": "Record app, failure stage and code, time, identity-verification workflow outcome, approved recovery action, and ownership without disclosing factors or secrets."
   },
   {
     "id": "connectivity",
     "title": "Endpoint connectivity",
-    "summary": "Work from the affected device outward to narrow down a wired, wireless, or VPN issue.",
-    "keywords": ["network", "connectivity", "wi-fi", "wifi", "wireless", "ethernet", "gateway", "vpn", "vlan", "switch port", "offline", "no internet", "packet loss"],
-    "checks": [
-      {"id": "scope", "text": "Determine whether the issue affects one device, one area, or the entire site. Compare with a nearby working device."},
-      {"id": "link", "text": "Check the wired link or wireless association and verify the device is using the expected network."},
-      {"id": "address", "text": "Verify the expected address, gateway, and VPN status. If a switch port or VLAN may be involved, coordinate with the network team."}
+    "category": "Network and connectivity",
+    "summary": "Find the failing layer when a device reports it is offline, cannot reach a service, or loses wired or wireless connectivity.",
+    "keywords": [
+      "network",
+      "connectivity",
+      "offline",
+      "no internet",
+      "internet not working",
+      "ethernet",
+      "gateway",
+      "vlan",
+      "switch port",
+      "network disconnected",
+      "connected but nothing loads",
+      "no network access",
+      "no internet connection",
+      "internet is not working",
+      "can't connect to the internet"
     ],
-    "handoff": "Record the affected area, wired or wireless connection, the last known working time, and the checks already performed."
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Compare one affected device with a nearby working device. Record whether the failure follows the user, endpoint, wall jack, wireless area, site, or application, and when it last worked."
+      },
+      {
+        "id": "link",
+        "text": "Confirm link or association on the intended adapter and network. Check airplane mode and seating of the user-accessible cable or dock. A tested spare cable can distinguish a local accessory fault from a port issue."
+      },
+      {
+        "id": "address",
+        "text": "Read the adapter address, gateway, resolver, and VPN status from system settings. Compare the configuration with a managed peer on the same network. Route missing or link-local IPv4 addresses to address assignment triage."
+      },
+      {
+        "id": "path",
+        "text": "Test a known approved internal service and an approved external service where policy allows. Record whether the hostname resolves and whether the actual service works. A successful gateway check alone leaves application reachability unverified."
+      },
+      {
+        "id": "verify",
+        "text": "Repeat the original workflow after the approved correction and confirm the expected network remains stable. Send correlated multi-device or site failures to networking or the incident owner."
+      }
+    ],
+    "handoff": "Record time, scope, location, connection type, expected network, address and reachability observations, unaffected controls, and the appropriate network, endpoint, or application owner."
+  },
+  {
+    "id": "major-incident",
+    "title": "Widespread outage and major incident",
+    "category": "Incident operations",
+    "summary": "Scope an outage affecting multiple users, locations, or business-critical workflows and engage the organization’s incident process when impact meets its criteria.",
+    "keywords": [
+      "major incident",
+      "widespread outage",
+      "company wide outage",
+      "multiple sites down",
+      "all users affected",
+      "entire office is down",
+      "service outage",
+      "whole site is down",
+      "everyone is affected",
+      "whole office offline"
+    ],
+    "checks": [
+      {
+        "id": "impact",
+        "text": "Identify the failing user journey and quantify affected users, sites, regions, or workloads. Identify critical deadlines or services and any known unaffected cohort. Record first observed and last known good with time zone."
+      },
+      {
+        "id": "confirm",
+        "text": "Check approved monitoring, service-health notices, recent changes, and sibling tickets. Compare results from two authorized vantage points if available. Correlate tickets under the parent incident once the common symptom is established."
+      },
+      {
+        "id": "dependencies",
+        "text": "Compare affected and healthy cohorts by region, tenant, client version, network, and upstream dependency. Use the differences to select an owning team and keep alternative hypotheses in the timeline."
+      },
+      {
+        "id": "coordination",
+        "text": "Apply the organization’s severity matrix and open or link the incident when indicated. Assign coordination, technical investigation, and communications owners. Record the next update time and approved workaround for affected users."
+      },
+      {
+        "id": "recovery",
+        "text": "Confirm the original workflow from affected vantage points, review error and latency trends through the incident owner’s observation window, and account for work still queued, replayed, or blocked before closing."
+      }
+    ],
+    "handoff": "Send the incident ID, impact, cohorts, timeline, dashboards, suspect changes, current mitigation, owners, and communications cadence to the incident lead."
+  },
+  {
+    "id": "backup-restore",
+    "title": "Backup alert and data restore request",
+    "category": "Incident operations",
+    "summary": "Identify whether a backup is failing or a restore is needed, then confirm recovery requirements and involve the backup or data owner.",
+    "keywords": [
+      "backup failed",
+      "backup job failed",
+      "restore request",
+      "restore from backup",
+      "recovery point",
+      "backup warning",
+      "missed backup",
+      "snapshot failed",
+      "backup not running"
+    ],
+    "checks": [
+      {
+        "id": "identify",
+        "text": "Record the source system, protected dataset or workload, job name, and the failing stage or requested restore point. For a restore, clarify the smallest object needed and the last time it was known good."
+      },
+      {
+        "id": "status",
+        "text": "In the approved console, compare last attempted and last verified successful backup, schedule and scope, repository or agent health, available capacity, and the current warning. A job success alone provides limited evidence of recoverability."
+      },
+      {
+        "id": "scope",
+        "text": "Check recovery objectives with the owner and compare the last usable copy with the business impact. Preserve the current source and any available versions when deletion, corruption, or compromise is suspected."
+      },
+      {
+        "id": "restore",
+        "text": "Route restore execution through the authorized workflow. Ask the backup owner to verify an isolated or alternate restore target, access controls, dependencies, and a rollback plan before any approved overwrite of live data."
+      },
+      {
+        "id": "validate",
+        "text": "Have the owner verify that the recovered item opens, contains the intended version, and is accessible only to the expected audience. For job failure, confirm the next scheduled run completes and the expected recovery point is visible."
+      }
+    ],
+    "handoff": "Provide workload and job references, failure stage, last successful backup, approved restore point and target, business deadline, validation owner, and any security incident link."
+  },
+  {
+    "id": "server-service",
+    "title": "Server or background service unavailable",
+    "category": "Incident operations",
+    "summary": "Distinguish a service failure from a monitoring failure, a host outage, or an upstream dependency delay.",
+    "keywords": [
+      "systemd",
+      "service not running",
+      "service keeps crashing",
+      "background service down",
+      "linux service failed",
+      "server service unavailable",
+      "daemon stopped",
+      "service stopped unexpectedly"
+    ],
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Identify the service, host or instance role, environment, exact alert, user impact, and maintenance status. Compare a failing health check with the original user-facing operation and a known-good peer when available."
+      },
+      {
+        "id": "health",
+        "text": "Review existing monitoring for host reachability, process state, restarts, CPU, memory, disk space, and node pressure. With authorized access, inspect the service status and bounded logs around the first failure."
+      },
+      {
+        "id": "dependencies",
+        "text": "Compare service failure times with upstream database, storage, DNS, identity, certificate, and deploy indicators. Record the first failing component and the earliest corroborating error."
+      },
+      {
+        "id": "action",
+        "text": "Escalate repeated crashes, resource exhaustion, or degraded redundancy to the service owner. Use the team's approved mitigation and rollback procedure if a restart or failover is warranted. Record ownership before intervention."
+      },
+      {
+        "id": "verify",
+        "text": "Confirm the health probe and a read-only user journey succeed together, then confirm restart counts and error rates stabilize and dependent work resumes."
+      }
+    ],
+    "handoff": "Send service and environment, host cohort, incident start, status and log references, affected dependencies, role of the failed node, and the next approved mitigation."
+  },
+  {
+    "id": "scheduled-job",
+    "title": "Scheduled job, batch, or integration failed",
+    "category": "Incident operations",
+    "summary": "Identify the failing job stage and the effect on downstream data or deadlines before anyone reruns the workload.",
+    "keywords": [
+      "scheduled job failed",
+      "batch job failed",
+      "cron job failed",
+      "task scheduler failed",
+      "etl failed",
+      "scheduled task not running",
+      "batch stuck",
+      "automation job failed"
+    ],
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Record job name and run ID, environment, run window with time zone, expected completion time, and whether downstream teams rely on the output. Confirm whether the schedule was skipped, running late, failed, or succeeded with incomplete output."
+      },
+      {
+        "id": "compare",
+        "text": "Compare the failing run with the last successful run. Check trigger time, upstream input availability and size, execution identity status, recent changes, and the first reported error or timeout."
+      },
+      {
+        "id": "queue",
+        "text": "Inspect authorized status for dependencies, queue age, worker capacity, and overlapping runs. Confirm whether the job already wrote output, sent notifications, or processed a subset of records."
+      },
+      {
+        "id": "rerun",
+        "text": "Coordinate retries with the owning team. Confirm replay safety, checkpoint or restart position, and how to reconcile duplicate or partial work before authorizing a rerun."
+      },
+      {
+        "id": "verify",
+        "text": "Confirm the expected output is complete using the owner’s count or reconciliation check. Verify downstream consumers received it and the next scheduled trigger is still enabled."
+      }
+    ],
+    "handoff": "Send job/run ID, schedule, last good run, failed stage, input/output counts, downstream deadlines, and the owner’s replay decision."
+  },
+  {
+    "id": "database-connection",
+    "title": "Application cannot connect to its database",
+    "category": "Incident operations",
+    "summary": "Separate a database availability issue from application configuration, authentication, connection-pool exhaustion, or an upstream network problem.",
+    "keywords": [
+      "database connection refused",
+      "database connection timeout",
+      "cannot connect to database",
+      "database is down",
+      "sql connection error",
+      "database connection pool",
+      "db connection failed",
+      "database unavailable"
+    ],
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Confirm the affected application, environment, database service alias, first failure, and whether reads, writes, or both fail. Compare application instances and existing health checks."
+      },
+      {
+        "id": "failure",
+        "text": "Capture the exception class and sanitized error code. A connection timeout, refused connection, TLS error, authentication rejection, and pool timeout suggest different owners or failure points."
+      },
+      {
+        "id": "dependencies",
+        "text": "Check approved service-health signals for database availability, failover, storage capacity, connection counts, and application pool saturation. Compare timing with deployments, credential rotations, and network changes."
+      },
+      {
+        "id": "escalate",
+        "text": "Engage the application or database owner for shared impact, persistent connection exhaustion, or instability after failover. Production credentials, pool settings, and database restarts belong in the owner’s change process."
+      },
+      {
+        "id": "verify",
+        "text": "Use an approved synthetic or read-only application check to confirm recovery. Have the owner verify writes where applicable and confirm cleared backlogs and stable connection counts."
+      }
+    ],
+    "handoff": "Provide application and environment, database alias, exception and timestamps, affected instance cohort, owner dashboards, and status of an approved verification check."
+  },
+  {
+    "id": "vpn",
+    "title": "VPN connection and internal access",
+    "category": "Network and connectivity",
+    "summary": "Identify whether the VPN fails before authentication, during tunnel setup, after connecting, or during an active session.",
+    "keywords": [
+      "vpn",
+      "vpn won t connect",
+      "vpn keeps disconnecting",
+      "vpn connects and no internal sites load",
+      "vpn connected but no access",
+      "connected to vpn but",
+      "vpn tunnel",
+      "vpn error",
+      "remote access vpn",
+      "always on vpn",
+      "globalprotect",
+      "anyconnect"
+    ],
+    "checks": [
+      {
+        "id": "stage",
+        "text": "Capture the VPN client, profile, operating system, timestamp, exact error, and stage. Distinguish inability to reach the gateway, rejected sign-in, tunnel setup failure, and connected with limited access."
+      },
+      {
+        "id": "baseline",
+        "text": "Confirm ordinary connectivity using a known approved service. Compare the same VPN profile on an authorized peer and check identity, VPN gateway, and maintenance status. For one network only, note the local connection type and any captive portal."
+      },
+      {
+        "id": "connected",
+        "text": "If the tunnel shows connected, compare one approved internal destination and the reported app. Compare assigned DNS and route information with a known-good VPN session to distinguish service, name resolution, and routing issues."
+      },
+      {
+        "id": "intermittent",
+        "text": "For dropouts, record duration, frequency, error text, sleep or network changes, and whether the underlying network drops at the same time. Keep client logs in the approved ticket after removing credentials and internal details unnecessary for triage."
+      },
+      {
+        "id": "verify",
+        "text": "Retest the affected workflow through the expected corporate VPN profile. Escalate cohort failures, gateway errors, or connected sessions with matching route or resolver symptoms to networking, and verified sign-in failures to identity."
+      }
+    ],
+    "handoff": "Send client and OS versions, profile, stage and code, impacted users and networks, connected-path checks, and timestamps. Omit tokens and full configuration exports."
+  },
+  {
+    "id": "wifi",
+    "title": "Wi-Fi association, roaming, and captive portal",
+    "category": "Network and connectivity",
+    "summary": "Determine whether Wi-Fi fails while joining, authenticating, roaming between access points, or completing the expected network sign-in.",
+    "keywords": [
+      "wi fi keeps dropping",
+      "can t connect to wifi",
+      "cannot join wi fi",
+      "won t join wifi",
+      "wi fi association",
+      "wifi password rejected",
+      "captive portal",
+      "guest wi fi",
+      "wifi roaming",
+      "eduroam",
+      "weak wifi signal",
+      "wireless drops"
+    ],
+    "checks": [
+      {
+        "id": "location",
+        "text": "Record the managed network name, location, device model, and failure stage. Compare a managed peer in the same area and the same endpoint in another approved area if practical."
+      },
+      {
+        "id": "association",
+        "text": "Confirm the adapter is enabled and the device is using the expected managed profile. Note whether the network is missing, the join is rejected, association succeeds without an assigned address, or only traffic fails."
+      },
+      {
+        "id": "enterprise",
+        "text": "For certificate or enterprise Wi-Fi prompts, confirm the expected profile and enrollment with Endpoint or Networking. For guest access, use the venue’s documented portal and follow the organization’s rules for guest networks."
+      },
+      {
+        "id": "movement",
+        "text": "For roaming or intermittent drops, record the location, movement, timestamps, and whether calls or all network activity drop. Compare repeated tests while stationary before handing off to Wireless Operations."
+      },
+      {
+        "id": "verify",
+        "text": "Confirm the device reconnects to the expected network and sustains the original task. Escalate certificate prompts, repeated enterprise authentication errors, missing coverage, or multiple users failing in the same area."
+      }
+    ],
+    "handoff": "Provide expected network, floor or area, device model, stage and error, time and frequency, tested comparisons, and the wireless or endpoint owner."
+  },
+  {
+    "id": "dhcp",
+    "title": "IP address assignment and DHCP",
+    "category": "Network and connectivity",
+    "summary": "Determine whether a device has a usable address and gateway on the intended network or cannot obtain the expected lease.",
+    "keywords": [
+      "dhcp",
+      "no ip address",
+      "stuck obtaining ip address",
+      "self assigned ip",
+      "169 254",
+      "apipa",
+      "dhcp lease",
+      "duplicate ip address",
+      "ip conflict",
+      "dhcp scope exhausted"
+    ],
+    "checks": [
+      {
+        "id": "adapter",
+        "text": "Identify the active adapter, expected wired or wireless network, and whether link or association is present. Record address type, subnet, gateway, lease status, and DNS from system settings or a read-only adapter view such as ipconfig /all."
+      },
+      {
+        "id": "scope",
+        "text": "Compare one known-good peer on the same managed segment. A single device suggests link, profile, or authorization differences. Multiple new clients failing while existing ones work can indicate an address assignment or scope issue."
+      },
+      {
+        "id": "classify",
+        "text": "Distinguish absent or IPv4 link-local addressing from a normal lease on the wrong segment or a duplicate-address warning. Check time, jack or wireless network, and whether the symptom follows the endpoint."
+      },
+      {
+        "id": "action",
+        "text": "Confirm the expected addressing method with Networking. Use an approved client reconnect or lease-refresh procedure if authorized and service disruption is acceptable. Route shared scope, relay, and address conflicts to the network owner."
+      },
+      {
+        "id": "verify",
+        "text": "Confirm the client now has the correct network address and gateway, then retest the reported workflow. Escalate if peers on the same segment remain affected or the issue recurs."
+      }
+    ],
+    "handoff": "Send device and adapter reference, network segment or jack, timestamps, lease and gateway observations, affected peers, and the assigned network owner."
+  },
+  {
+    "id": "network-performance",
+    "title": "Network latency, packet loss, and intermittent drops",
+    "category": "Network and connectivity",
+    "summary": "Distinguish a slow application from a degrading network path or a local wireless issue using time-aligned observations.",
+    "keywords": [
+      "packet loss",
+      "high latency",
+      "high ping",
+      "network keeps dropping",
+      "internet keeps cutting out",
+      "unstable connection",
+      "network jitter",
+      "slow internet",
+      "intermittent network",
+      "slow network",
+      "intermittent connectivity",
+      "internet is slow",
+      "internet is really slow"
+    ],
+    "checks": [
+      {
+        "id": "baseline",
+        "text": "Record the affected action, connection type, locations, exact time windows, duration, and frequency. Establish whether the complaint is slow throughput, long response time, disconnects, or a single application freeze."
+      },
+      {
+        "id": "compare",
+        "text": "Compare the same operation on a wired or other approved managed connection and with a nearby peer. Check whether the symptom tracks the device, access point area, VPN path, provider, destination, or peak workload."
+      },
+      {
+        "id": "measure",
+        "text": "Use approved, bounded diagnostics against known support destinations and log time, sample size, delay, and loss alongside app behavior. Compare results with established service baselines. A host that deprioritizes test traffic needs corroborating evidence."
+      },
+      {
+        "id": "correlate",
+        "text": "Check approved monitoring and incident notices for interface errors, access-point load, provider circuit events, or app response spikes. Keep comparison tests small during congestion."
+      },
+      {
+        "id": "verify",
+        "text": "Repeat the affected workflow in the same conditions and confirm performance remains near the agreed baseline during the observation window. Escalate repeatable end-to-end loss or multi-user degradation."
+      }
+    ],
+    "handoff": "Provide time windows, connection and locations, symptom type, measured data and baseline, peer results, and the suspected owning team."
+  },
+  {
+    "id": "proxy-filter",
+    "title": "Proxy, firewall, and web filtering",
+    "category": "Network and connectivity",
+    "summary": "Identify whether an approved destination is deliberately blocked, unreachable through the expected route, or failing at the application.",
+    "keywords": [
+      "proxy",
+      "proxy authentication required",
+      "proxy 407",
+      "web filter",
+      "website blocked by company",
+      "firewall blocked",
+      "secure web gateway",
+      "zscaler block",
+      "url is blocked",
+      "pac file",
+      "connection blocked by policy"
+    ],
+    "checks": [
+      {
+        "id": "identify",
+        "text": "Capture the canonical destination, application, time, network or VPN state, exact status or block reference, and business purpose. Record URL paths only if allowed, stripping query strings and sensitive values."
+      },
+      {
+        "id": "compare",
+        "text": "Compare the same approved destination and access path for a comparable authorized user. Check if the browser and other approved clients show the same result, and whether the problem is one hostname or a wider category."
+      },
+      {
+        "id": "classify",
+        "text": "Distinguish a policy block page, HTTP proxy authentication challenge, timeout, and application-side error. Review the approved agent or proxy health and service notices from a read-only view as permitted."
+      },
+      {
+        "id": "route",
+        "text": "Send policy or categorization requests through the designated exception process with owner and justification. Send unexpected denials, proxy service errors, or widespread failures to network security."
+      },
+      {
+        "id": "verify",
+        "text": "Retest through the managed path after an approved correction and confirm the original workflow completes. Record valid business impact and the approved alternative when access stays blocked."
+      }
+    ],
+    "handoff": "Send destination scope, sanitized status or block ID, user cohort, network and client context, approvals if applicable, and the proxy, application, or network security owner."
+  },
+  {
+    "id": "tls-certificate",
+    "title": "Browser TLS and certificate errors",
+    "category": "Network and connectivity",
+    "summary": "Determine whether a secure connection error follows the service, endpoint clock, managed trust configuration, or network path.",
+    "keywords": [
+      "tls",
+      "ssl",
+      "certificate expired",
+      "certificate error",
+      "your connection is not private",
+      "net err cert",
+      "ssl certificate",
+      "bad certificate",
+      "untrusted certificate",
+      "hostname mismatch",
+      "ssl handshake failed"
+    ],
+    "checks": [
+      {
+        "id": "capture",
+        "text": "Capture the expected service address, exact browser or client error, timestamp, and affected network. Pause sensitive activity while an unexpected trust or certificate warning is present."
+      },
+      {
+        "id": "inspect",
+        "text": "Through an approved browser certificate view, compare the certificate hostname, issuer, validity dates, and trust error with an authorized known-good endpoint. Check local time and time zone against a trusted managed device."
+      },
+      {
+        "id": "scope",
+        "text": "Compare other affected users and approved network paths. A single endpoint can point to clock or managed trust settings. Multiple users seeing the same expired or mismatched certificate can point to the service or managed gateway."
+      },
+      {
+        "id": "route",
+        "text": "Escalate unexpected issuers or suspected interception through Security. Route shared expiration, hostname, or chain problems to the service or certificate owner. Route managed client trust deployment through Endpoint."
+      },
+      {
+        "id": "verify",
+        "text": "Retest the canonical hostname through the expected managed path after the owner’s fix. Confirm the warning clears, the expected certificate is presented, and the original workflow succeeds."
+      }
+    ],
+    "handoff": "Record exact error, affected hostname, incident time, validity and issuer observations, comparison paths, and owner. Keep certificate private keys and sensitive URLs out of tickets."
+  },
+  {
+    "id": "voip",
+    "title": "Desk phone and VoIP call failures",
+    "category": "Network and connectivity",
+    "summary": "Isolate registration, routing, and media problems affecting enterprise calling, using approved test destinations.",
+    "keywords": [
+      "voip",
+      "desk phone",
+      "sip phone",
+      "one way audio",
+      "extension not working",
+      "calls dropping",
+      "no dial tone",
+      "phone not registered",
+      "outbound calls fail",
+      "inbound calls fail",
+      "softphone can t call"
+    ],
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Confirm endpoint type, affected extension group or site, time, whether calls fail inbound or outbound, and whether internal and external routes behave differently. Use a designated test number for reproduction."
+      },
+      {
+        "id": "registration",
+        "text": "Check endpoint power, network link, reported registration, and service health. Compare a known-good phone on the same network and the same calling account on an approved client when available."
+      },
+      {
+        "id": "media",
+        "text": "Distinguish failed setup, connected calls with missing audio or tones, and degraded call quality. Record direction, duration, headset or speaker behavior, and available loss or jitter metrics for the approved test call."
+      },
+      {
+        "id": "routing",
+        "text": "Ask the telecom owner to check approved routing and provider status for the affected call pattern. Treat failure of emergency calling as urgent and follow the organization’s business continuity process."
+      },
+      {
+        "id": "verify",
+        "text": "Confirm approved inbound and outbound test calls and two-way audio after remediation. Use the authorized telecom procedure for any emergency-calling verification."
+      }
+    ],
+    "handoff": "Provide sanitized call IDs, times, routes, direction, site and endpoints, registration state, and telecom owner. Store protected phone numbers only in approved systems when required."
+  },
+  {
+    "id": "conditional-access",
+    "title": "Conditional Access and sign-in policy",
+    "category": "Identity and access",
+    "summary": "Determine whether a managed device, approved app, location rule, or another policy requirement blocked an otherwise valid sign-in.",
+    "keywords": [
+      "conditional access",
+      "blocked by conditional access",
+      "aadsts53003",
+      "aadsts53000",
+      "aadsts53001",
+      "approved client app required",
+      "device state required",
+      "sign in blocked by policy",
+      "device not compliant for sign in"
+    ],
+    "checks": [
+      {
+        "id": "details",
+        "text": "Capture the exact policy wording, request or correlation ID, application, timestamp with zone, client, and device context from the approved sign-in error details."
+      },
+      {
+        "id": "scope",
+        "text": "Check whether the same identity can reach another approved service and whether an authorized user on a similar managed device is affected. Confirm account and tenant selection."
+      },
+      {
+        "id": "policy",
+        "text": "Have an authorized identity operator look up the matching event using its ID and timestamp. Compare the failing policy result, target resource, managed or compliance state, approved-client condition, and dependencies with expected assignments."
+      },
+      {
+        "id": "remediate",
+        "text": "Route a legitimate enrollment, compliance, or approved-client prerequisite to the owning team. Send apparently incorrect targeting, location requirements, or broad failures to Identity, keeping the active policy in force."
+      },
+      {
+        "id": "verify",
+        "text": "Confirm a fresh sign-in from the expected managed device, app, and access path. Validate that the original resource opens with the intended entitlement."
+      }
+    ],
+    "handoff": "Send resource, time, sanitized error and correlation ID, expected prerequisites, verified device state, and the team that owns the policy or prerequisite."
+  },
+  {
+    "id": "sso-federation",
+    "title": "Single sign-on and federation errors",
+    "category": "Identity and access",
+    "summary": "Identify whether an SSO failure occurs at the identity provider, the application callback, or account provisioning after authentication.",
+    "keywords": [
+      "sso",
+      "saml",
+      "oidc",
+      "single sign on",
+      "sso redirect loop",
+      "saml assertion error",
+      "sso login loop",
+      "federation error",
+      "aadsts50011",
+      "redirect uri mismatch"
+    ],
+    "checks": [
+      {
+        "id": "stage",
+        "text": "Start from the organization’s canonical application entry point. Record whether the redirect reaches the identity provider, whether authentication succeeds, and what app error appears after the return. Record IDs and time."
+      },
+      {
+        "id": "scope",
+        "text": "Compare direct access with the documented app launcher if both are supported. Compare the same user in another SSO application and an authorized peer in the affected app to narrow the ownership."
+      },
+      {
+        "id": "account",
+        "text": "Confirm the intended organization and account, expected app assignment, and whether the application first needs a provisioned account. If approved, try a clean managed browser session while preserving unsaved work."
+      },
+      {
+        "id": "changes",
+        "text": "Ask Identity and the app owner to compare sanitized events and recent certificate, callback, application, or provisioning changes. Keep SAML assertions, authorization codes, signed URLs, and tokens out of tickets."
+      },
+      {
+        "id": "verify",
+        "text": "Complete a fresh sign-in through the canonical entry point and open the intended resource with correct privileges. Escalate loop or configuration errors affecting multiple users to the application and federation owners."
+      }
+    ],
+    "handoff": "Send application and tenant, redirect stage, error and correlation ID, sanitized time-aligned log references, peer comparison, and responsible owners."
+  },
+  {
+    "id": "account-lockout",
+    "title": "Repeated account lockout or expired credentials",
+    "category": "Identity and access",
+    "summary": "Identify whether a lockout follows repeated attempts, an old saved credential, sync delay, or unexpected sign-in activity.",
+    "keywords": [
+      "account lockout",
+      "account keeps locking",
+      "password expired",
+      "account repeatedly locked",
+      "locked again",
+      "password stopped working after reset",
+      "too many sign in attempts",
+      "active directory account locked"
+    ],
+    "checks": [
+      {
+        "id": "timing",
+        "text": "Capture the lockout or expiry code, affected identity context, times, and where the user can still sign in. Ask about a recent authorized password change or additional managed devices."
+      },
+      {
+        "id": "source",
+        "text": "Compare fresh sign-ins with existing clients. Authorized Identity staff can compare matching sign-in events and check whether scheduled retries, a managed mail client, or another enrolled device are implicated."
+      },
+      {
+        "id": "security",
+        "text": "If the user reports activity they did not initiate or other suspicious evidence, raise a security ticket promptly and preserve relevant event references. Repeatedly unlocking the account can obscure the cause."
+      },
+      {
+        "id": "recover",
+        "text": "Use approved identity verification and account recovery. Coordinate updates to saved credentials through the owning workflow, especially for shared or service identities with downstream dependencies."
+      },
+      {
+        "id": "verify",
+        "text": "Confirm the intended sign-in after recovery and observe through the typical recurrence interval where practical. Escalate continued lockouts or unexplained source activity."
+      }
+    ],
+    "handoff": "Provide timestamps, stage and code, affected apps, recovery event reference, recent changes, and confirmed or suspected retry source. Exclude all credential values."
+  },
+  {
+    "id": "access-lifecycle",
+    "title": "Onboarding, role change, and offboarding",
+    "category": "Identity and access",
+    "summary": "Route legitimate access lifecycle requests through the system of record and approved owners, with explicit scope and effective times.",
+    "keywords": [
+      "onboarding",
+      "new hire access",
+      "offboarding",
+      "employee departure",
+      "joiner mover leaver",
+      "role change access",
+      "remove employee access",
+      "terminated employee account",
+      "employee transfer",
+      "access provisioning",
+      "revoke access for departing employee"
+    ],
+    "checks": [
+      {
+        "id": "request",
+        "text": "Identify whether the request is for a joiner, mover, leaver, or contractor. Confirm the authoritative ticket or HR event, effective time and zone, manager or sponsor, and each system in scope through authorized records."
+      },
+      {
+        "id": "scope",
+        "text": "Record target resources, access role, owner, business purpose, and end date if applicable. Use the approved role or entitlement catalog and check for overlapping existing access for movers."
+      },
+      {
+        "id": "approve",
+        "text": "Route grants, revocations, and data ownership transfers through the authorized system owners and approval workflow. For urgent offboarding, use the designated emergency process and coordinate identity, devices, and shared resources."
+      },
+      {
+        "id": "track",
+        "text": "Record per-system status, dependencies, and delayed or denied tasks. Protect employee details and share the minimum required only in approved systems."
+      },
+      {
+        "id": "verify",
+        "text": "Confirm requested access is usable for the target role or revoked at the effective time. Have system owners confirm any approved transfer of business data, equipment, and outstanding follow-up."
+      }
+    ],
+    "handoff": "Send request reference, workflow stage, approved systems and effective time, remaining blockers, each owner, and verification status."
+  },
+  {
+    "id": "suspicious-sign-in",
+    "title": "Suspicious sign-in or MFA prompts",
+    "category": "Security response",
+    "summary": "Route unfamiliar sign-ins, unrequested MFA prompts, or suspected account takeover promptly to the organization’s Security team.",
+    "keywords": [
+      "unfamiliar sign in",
+      "unexpected mfa",
+      "unsolicited mfa",
+      "mfa prompts i didn t request",
+      "login i don t recognize",
+      "unauthorized login",
+      "account compromise",
+      "compromised account",
+      "someone logged into my account",
+      "mfa fatigue"
+    ],
+    "checks": [
+      {
+        "id": "contain",
+        "text": "Ask the user to decline unexpected prompts and report through the trusted security channel. If they approved a prompt, entered credentials, or see unusual account activity, flag the case as time-sensitive immediately."
+      },
+      {
+        "id": "evidence",
+        "text": "Record local time and zone, affected service and identity reference, approximate number of prompts, and user actions. Capture only sanitized alert or event IDs in the case."
+      },
+      {
+        "id": "scope",
+        "text": "Ask whether other users received similar prompts or the account showed unexpected changes. Authorized Security and Identity operators can correlate the report with approved sign-in events and affected sessions."
+      },
+      {
+        "id": "response",
+        "text": "Leave session revocation, credential recovery, and review of unwanted account changes to Security or Identity under the incident procedure. Use a trusted managed device and the approved verification workflow for any user recovery step."
+      },
+      {
+        "id": "verify",
+        "text": "Confirm Security has acknowledged and assigned the incident. Have the authorized owner confirm expected sign-in, account state, and follow-up monitoring before resolving the ticket."
+      }
+    ],
+    "handoff": "Send restricted incident reference, timeline, observed prompts or events, user interaction, identity team contact, and who owns containment and recovery."
+  },
+  {
+    "id": "phishing",
+    "title": "Suspicious email, message, or QR code",
+    "category": "Security response",
+    "summary": "Use the approved reporting channel and flag any link interaction, credential entry, or payment activity for immediate response.",
+    "keywords": [
+      "phishing",
+      "suspicious email",
+      "fake invoice email",
+      "malicious attachment",
+      "clicked a suspicious link",
+      "scanned suspicious qr code",
+      "reported phishing",
+      "smishing",
+      "business email compromise",
+      "fake login page"
+    ],
+    "checks": [
+      {
+        "id": "interact",
+        "text": "Ask whether the user opened an attachment, followed a link, scanned a code, shared information, granted access, or sent money. If any occurred, notify Security promptly and identify possible payment fraud for the approved finance channel."
+      },
+      {
+        "id": "report",
+        "text": "Use the organization’s phishing report workflow or trusted security contact. Preserve the message in the designated system and avoid ordinary forwarding, replies, and reopening attachments or links."
+      },
+      {
+        "id": "evidence",
+        "text": "Record delivery time, channel, sanitized subject or message ID, apparent sender, user actions, and affected device. Let the approved security tools retain original content."
+      },
+      {
+        "id": "scope",
+        "text": "Note similar reports and any known affected accounts or systems. Security owns analysis, approved message retrieval, and coordinated containment across mailboxes or devices."
+      },
+      {
+        "id": "verify",
+        "text": "Confirm the case was received and an owner communicated the user’s next safe action. Record any approved recovery or payment incident references in the restricted case."
+      }
+    ],
+    "handoff": "Send time, report reference, user actions, asset or account reference, known scope, and security or finance owner. Leave suspected content in the reporting workflow."
+  },
+  {
+    "id": "malware-alert",
+    "title": "Endpoint malware, EDR, or ransomware alert",
+    "category": "Security response",
+    "summary": "Engage Security immediately for suspected malicious activity, widespread file changes, or a ransomware notice, and preserve evidence.",
+    "keywords": [
+      "malware alert",
+      "ransomware",
+      "files suddenly encrypted",
+      "ransom note",
+      "edr alert",
+      "defender threat detected",
+      "suspicious process alert",
+      "antivirus detected malware",
+      "virus detected",
+      "endpoint security alert"
+    ],
+    "checks": [
+      {
+        "id": "urgent",
+        "text": "Contact the approved security incident channel from a trusted device. If active spread or encryption is suspected, follow the organization’s isolation procedure immediately. Security directs handling of the affected endpoint."
+      },
+      {
+        "id": "scope",
+        "text": "Record affected device reference, alert ID, first observed time, symptoms, and whether shared data or multiple endpoints are affected. Note related user actions and approved telemetry references."
+      },
+      {
+        "id": "preserve",
+        "text": "Keep the original alert and state available for responders. Avoid opening suspicious files, running cleanup tools, erasing artifacts, or restarting an affected device without incident direction."
+      },
+      {
+        "id": "coordination",
+        "text": "Restrict evidence access to the authorized case. Security owns containment, evidence acquisition, recovery criteria, and coordination with endpoint, storage, and incident management."
+      },
+      {
+        "id": "verify",
+        "text": "Have Security confirm containment and release or replacement of the device. Validate the user’s approved workflow on a trusted endpoint and record evidence of resumed safe access."
+      }
+    ],
+    "handoff": "Send restricted incident ID, device references, observed symptoms and times, alert IDs, scope of shared data impact, and isolation or containment status."
+  },
+  {
+    "id": "lost-device",
+    "title": "Lost or stolen device",
+    "category": "Security response",
+    "summary": "Prioritize reporting and route decisions about device locking, credentials, and data exposure to authorized teams.",
+    "keywords": [
+      "lost laptop",
+      "stolen laptop",
+      "lost phone",
+      "stolen phone",
+      "lost my device",
+      "missing company device",
+      "laptop stolen",
+      "phone was stolen",
+      "stolen work computer",
+      "lost my company laptop",
+      "lost my work laptop",
+      "lost my work phone",
+      "stolen work laptop",
+      "stolen company phone"
+    ],
+    "checks": [
+      {
+        "id": "report",
+        "text": "Report the missing device through the approved IT and security channel. Identify the device type and managed asset reference, whether it contained work data or active sessions, and last known time and circumstances."
+      },
+      {
+        "id": "scope",
+        "text": "Ask about other missing items such as a security key, badge, or second device. Verify the user through the approved process before making account or device decisions."
+      },
+      {
+        "id": "state",
+        "text": "Have authorized Endpoint staff check management, last contact, and encryption status, and Identity assess associated active sessions or authentication factors. Keep precise location and personal information in restricted records."
+      },
+      {
+        "id": "response",
+        "text": "Follow the approved incident workflow for device lock, account recovery, and any wipe decision. Security or Endpoint coordinates taking action and tracks whether remote commands actually completed."
+      },
+      {
+        "id": "verify",
+        "text": "Confirm which actions were delivered or remain pending. Arrange authorized replacement or restored access and document ownership of security follow-up."
+      }
+    ],
+    "handoff": "Send incident reference, asset and account references, last managed state, risks and approvals, completed and pending actions, and responsible Security and Endpoint owners."
+  },
+  {
+    "id": "data-exposure",
+    "title": "Accidental sharing, misdirected email, or data exposure",
+    "category": "Security response",
+    "summary": "Report unexpected access to sensitive information promptly and capture which resource, recipient, or sharing path was involved.",
+    "keywords": [
+      "data exposure",
+      "data leak",
+      "accidental external sharing",
+      "sent sensitive email to wrong person",
+      "email sent to the wrong person",
+      "wrong recipient",
+      "sent confidential file",
+      "public sharing link",
+      "exposed sensitive data",
+      "dlp alert"
+    ],
+    "checks": [
+      {
+        "id": "urgent",
+        "text": "Use the approved Security or Privacy incident channel for suspected sensitive data exposure. State what kind of data may be involved and whether access appears ongoing, using policy classification labels."
+      },
+      {
+        "id": "scope",
+        "text": "Record timestamp, system, resource or message reference, sharing mechanism, audience scope, observed access evidence, and your confidence. Avoid reproducing the sensitive content in the ticket."
+      },
+      {
+        "id": "contain",
+        "text": "Follow the designated team’s approved containment and evidence process. Have the resource owner record the current sharing state before authorized changes, and preserve audit event links."
+      },
+      {
+        "id": "assess",
+        "text": "Distinguish potential accessibility from confirmed viewing, downloading, or forwarding. Leave notification and compliance decisions with the organization’s designated incident owners."
+      },
+      {
+        "id": "verify",
+        "text": "Have the owner verify permissions or recipient handling after the approved action. Preserve the timeline and confirm which outstanding actions remain with Security or Privacy."
+      }
+    ],
+    "handoff": "Send the restricted incident ID, data classification, service reference, audience scope, timestamps, containment and verification status, and responsible owner."
+  },
+  {
+    "id": "desktop-app-crash",
+    "title": "Desktop application freezes or closes",
+    "category": "Applications and service requests",
+    "summary": "Separate a broken desktop client, a problem with one document, and a broader software or device regression.",
+    "keywords": [
+      "application keeps crashing",
+      "app not responding",
+      "desktop app crash",
+      "excel keeps crashing",
+      "excel not responding",
+      "word not responding",
+      "word keeps crashing",
+      "application freezes",
+      "app closes immediately",
+      "powerpoint keeps crashing",
+      "app keeps freezing"
+    ],
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Record the application and build, operating system, error or crash reference, last working time, and the user action that triggers the failure. Check for unsaved work and capture recovery prompts before restarting."
+      },
+      {
+        "id": "reproduce",
+        "text": "Compare a new test document or sample workspace with the affected item. If available, compare the same user workflow using an approved web client or an authorized peer on the same desktop build."
+      },
+      {
+        "id": "isolate",
+        "text": "Read the app’s crash or diagnostic view where approved, and correlate required plug-ins, current app build, available disk space, policy changes, and device performance. Route a single corrupt or locked document through file recovery."
+      },
+      {
+        "id": "remediate",
+        "text": "Use the approved client repair or managed update process with the user’s work protected. Route repeatable crashes affecting multiple users on the same build to the application owner with reproducible non-sensitive steps."
+      },
+      {
+        "id": "verify",
+        "text": "Test the original action and a clean sample in the same app. Confirm the user can save and reopen approved test work before closing or documenting the workaround."
+      }
+    ],
+    "handoff": "Provide application and OS builds, operation, scope, crash reference and time, sample comparison, data recovery status, and responsible application or endpoint owner."
+  },
+  {
+    "id": "pin-sign-in",
+    "title": "Windows Hello, PIN, and biometric sign-in",
+    "category": "Identity and access",
+    "summary": "Determine whether a device-bound sign-in method failed while the user’s organization account remains usable.",
+    "keywords": [
+      "windows hello",
+      "pin not available",
+      "pin isn t available",
+      "something happened and your pin",
+      "fingerprint sign in stopped",
+      "face sign in not working",
+      "windows pin reset",
+      "biometric sign in unavailable"
+    ],
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Capture the sign-in device, exact error, operating system, and last known good time. Ask about recent updates, repair, re-enrollment, or hardware changes and whether normal organizational sign-in works elsewhere."
+      },
+      {
+        "id": "method",
+        "text": "Determine whether the device offers another approved sign-in method and whether the issue is limited to face, fingerprint, or PIN. Use the organization’s identity verification method before discussing recovery."
+      },
+      {
+        "id": "prerequisites",
+        "text": "Check managed device compliance, clock, and expected network reachability when recovery requires online access. Ask Endpoint to review device-management status or affected user and device assignments using approved tools."
+      },
+      {
+        "id": "recover",
+        "text": "Route PIN or biometric recovery through the documented device-bound credential workflow. Where the managed feature is unavailable after repair, send the case to Endpoint and Identity to verify enrollment and hardware."
+      },
+      {
+        "id": "verify",
+        "text": "Confirm the restored method works through a lock and unlock on the target managed device, and verify access to the affected app if the reported issue extended beyond local sign-in."
+      }
+    ],
+    "handoff": "Send device and OS reference, failing method, error and time, approved alternate method status, recent hardware or enrollment change, and responsible owner. Keep PINs and recovery codes out of notes."
+  },
+  {
+    "id": "usb-device",
+    "title": "USB accessory not detected",
+    "category": "Endpoint and hardware",
+    "summary": "Determine whether an approved accessory failure follows the device, port, dock, cable, operating system, or a managed device policy.",
+    "keywords": [
+      "usb not recognized",
+      "usb device not detected",
+      "usb device not recognized",
+      "usb accessory not working",
+      "usb port not working",
+      "usb drive not showing",
+      "external hard drive not recognized"
+    ],
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Record accessory type, endpoint and OS, direct or dock connection, power needs, exact error, and whether the accessory has worked before. For removable storage, establish whether existing data must be preserved."
+      },
+      {
+        "id": "compare",
+        "text": "Compare a sanctioned known-good cable, compatible port, or approved spare on the same endpoint. If the accessory is trusted and policy permits, compare it with another managed endpoint. Route unknown or suspicious physical devices through Security."
+      },
+      {
+        "id": "inspect",
+        "text": "Review the operating system’s device listing and relevant policy status. Distinguish absent hardware, detected but malfunctioning hardware, visible storage without a usable volume, and a managed block."
+      },
+      {
+        "id": "route",
+        "text": "Route hardware faults to Endpoint and intended device-policy exceptions through the approved owner. If existing storage appears corrupted or unexpectedly requests formatting, preserve it and use the authorized recovery workflow."
+      },
+      {
+        "id": "verify",
+        "text": "Confirm the approved accessory stays detected and completes its intended task after reconnecting. For storage, validate the approved read or save workflow with a test file as appropriate."
+      }
+    ],
+    "handoff": "Send accessory and asset references, connection path, observed detection and policy state, safe comparisons, data risk, and owning team."
+  },
+  {
+    "id": "cloud-storage-quota",
+    "title": "Cloud storage quota and upload capacity",
+    "category": "Files, storage, and sharing",
+    "summary": "Distinguish insufficient personal, shared, or tenant storage from a file-size limit or local synchronization error.",
+    "keywords": [
+      "cloud storage full",
+      "onedrive storage full",
+      "google drive storage full",
+      "sharepoint storage limit",
+      "site storage quota",
+      "cloud storage quota",
+      "sharepoint quota exceeded",
+      "drive quota exceeded"
+    ],
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Identify the service, account or site, exact quota or upload warning, affected operation, and whether multiple users or folders are affected. Use the canonical web view to see whether the failure is independent of the sync client."
+      },
+      {
+        "id": "measure",
+        "text": "Check approved storage usage and limits for the affected account, shared site or drive, and local sync volume where relevant. Compare with file-size, count, and path constraints when only one upload fails."
+      },
+      {
+        "id": "protect",
+        "text": "Confirm whether retention, version history, shared ownership, or legal hold applies before cleanup. Preserve any unsynced data and route capacity requests or approved cleanup decisions to the storage owner."
+      },
+      {
+        "id": "compare",
+        "text": "Try an authorized small, non-sensitive test file at the intended location when allowed. If it succeeds but the original fails, document file characteristics and route the suspected limit to the owner."
+      },
+      {
+        "id": "verify",
+        "text": "Confirm the intended upload and any expected synchronization succeed after authorized remediation, and that usage or policy changes are visible in the approved console."
+      }
+    ],
+    "handoff": "Provide account or site reference, limit and usage, error and time, upload size, browser or client comparison, and storage or retention owner."
+  },
+  {
+    "id": "windows-startup",
+    "title": "Windows startup and stop errors",
+    "summary": "Locate the Windows startup failure and distinguish a stop error or update loop from a hardware, display, or encryption issue.",
+    "keywords": [
+      "blue screen",
+      "bsod",
+      "stop code",
+      "inaccessible boot device",
+      "automatic repair",
+      "recovery loop",
+      "windows won't boot",
+      "windows wont boot",
+      "windows won't start",
+      "windows boot loop",
+      "stuck on windows logo",
+      "windows startup failure"
+    ],
+    "checks": [
+      {
+        "id": "stage",
+        "text": "Identify whether the last visible stage was the firmware logo, Windows loading screen, recovery screen, stop error, or sign-in. Record the exact stop code and timestamp."
+      },
+      {
+        "id": "change",
+        "text": "Record the last known good boot, recent driver or update changes, and whether the problem followed a dock, external drive, or hardware replacement."
+      },
+      {
+        "id": "isolate",
+        "text": "If there is no firmware logo, use the power or display runbook. If startup requests a recovery key, use the disk encryption recovery runbook."
+      },
+      {
+        "id": "diagnose",
+        "text": "Disconnect nonessential external accessories during an approved restart after confirming any accessible work is saved. Run approved built-in hardware diagnostics if available."
+      },
+      {
+        "id": "verify",
+        "text": "After approved recovery, verify normal sign-in, the expected desktop, and one normal restart. Route persistent startup loops, disk diagnostics failures, or repeated stop codes to endpoint support."
+      }
+    ],
+    "handoff": "Capture asset ID, last visible stage, stop code, recurrence, recent changes, diagnostics outcome, and whether accessible data or open work must be preserved.",
+    "category": "Endpoint and hardware"
+  },
+  {
+    "id": "windows-user-profile",
+    "title": "Windows profile and missing desktop files",
+    "summary": "Determine whether Windows loaded the expected user profile and protect accessible files while diagnosing a temporary profile or missing desktop.",
+    "keywords": [
+      "temporary profile",
+      "user profile service failed",
+      "user profile cannot be loaded",
+      "you've been signed in with a temporary profile",
+      "desktop files disappeared after login",
+      "desktop files missing after login",
+      "windows profile corruption",
+      "wrong windows user profile"
+    ],
+    "checks": [
+      {
+        "id": "stage",
+        "text": "Check that Windows completed authentication. Capture any User Profile Service or temporary-profile message and confirm the expected work account and device."
+      },
+      {
+        "id": "scope",
+        "text": "Determine whether files are missing from the desktop alone, several known folders, or the full profile. Compare access from a managed peer device or approved cloud web view if relevant."
+      },
+      {
+        "id": "evidence",
+        "text": "Record the last normal sign-in, recent OS or account changes, disk capacity, sync status, and profile-load event timestamp from approved tools."
+      },
+      {
+        "id": "preserve",
+        "text": "Help the user preserve work created in the current session through an approved location before sign-out. Route repeated temporary-profile loads or missing data to endpoint support."
+      },
+      {
+        "id": "verify",
+        "text": "After an approved recovery, verify normal sign-in, access to expected folders, and that a benign test file persists in an approved location after a second sign-in."
+      }
+    ],
+    "handoff": "Capture asset ID, profile error and timestamp, missing folders without file contents, disk and sync state, preservation steps, and outcome of the first approved recovery attempt.",
+    "category": "Endpoint and hardware"
+  },
+  {
+    "id": "mac-startup",
+    "title": "Mac startup and startup disk errors",
+    "summary": "Identify the last Mac startup stage and check whether the issue is tied to a peripheral, missing startup disk, or failed update.",
+    "keywords": [
+      "mac won't boot",
+      "mac wont boot",
+      "mac boot loop",
+      "mac startup",
+      "macbook won't start",
+      "flashing folder",
+      "question mark folder",
+      "stuck on apple logo",
+      "mac prohibitory symbol",
+      "startup disk not found",
+      "stuck on the apple logo"
+    ],
+    "checks": [
+      {
+        "id": "stage",
+        "text": "Capture whether there is no power, a blank display with power, a flashing folder, a prohibitory symbol, or a progress bar that repeatedly stalls."
+      },
+      {
+        "id": "context",
+        "text": "Record the Mac model or processor family, reported macOS version, last known good startup, recent updates, storage warnings, and attached accessories."
+      },
+      {
+        "id": "isolate",
+        "text": "With power connected, test a direct display connection where available and disconnect nonessential accessories during an approved restart. Route recovery-key prompts to disk encryption recovery."
+      },
+      {
+        "id": "diagnose",
+        "text": "Use the organization’s model-specific startup diagnostics or managed recovery guidance. Record whether the startup disk is detected and any hardware error code."
+      },
+      {
+        "id": "verify",
+        "text": "Verify normal startup, sign-in, and access to expected work files after recovery. Route a missing startup disk, diagnostic error, or persistent startup failure to endpoint support."
+      }
+    ],
+    "handoff": "Record asset ID, model or processor family, startup symbol or stage, last update, accessories tested, diagnostic code, and any data-preservation requirement.",
+    "category": "Endpoint and hardware"
+  },
+  {
+    "id": "endpoint-power",
+    "title": "Device power, battery, and charging",
+    "summary": "Distinguish absent power, a depleted battery, an inadequate charger, and a device that powers on with a blank display.",
+    "keywords": [
+      "laptop won't turn on",
+      "laptop wont turn on",
+      "no power",
+      "battery not charging",
+      "plugged in not charging",
+      "laptop not charging",
+      "battery draining fast",
+      "swollen battery",
+      "burning smell",
+      "laptop keeps shutting off",
+      "laptop overheats",
+      "laptop is overheating"
+    ],
+    "checks": [
+      {
+        "id": "condition",
+        "text": "If there is visible swelling, liquid damage, a burning smell, or abnormal heat, stop device testing and follow the organization’s facilities or hardware safety procedure."
+      },
+      {
+        "id": "symptom",
+        "text": "Record charger and device indicators, fan or keyboard activity, screen behavior, recent damage, and whether the fault occurs on battery, AC power, or both."
+      },
+      {
+        "id": "power-path",
+        "text": "For a device without visible damage, verify the outlet works and test a known-good compatible charger and cable connected directly to the device, using the required wattage."
+      },
+      {
+        "id": "isolate",
+        "text": "Compare direct charging with dock charging and check the OS charging or battery health reading if the device starts. Route a powered device with only a blank display to display triage."
+      },
+      {
+        "id": "verify",
+        "text": "Verify charging is recognized and the percentage increases, or confirm stable operation on the approved power source. Route repeated shutdowns or a failed known-good power test to hardware support."
+      }
+    ],
+    "handoff": "Record asset ID, damage indicators, charger type and wattage, observed lights, battery readings, known-good test outcome, and whether the device was removed from service.",
+    "category": "Endpoint and hardware"
+  },
+  {
+    "id": "endpoint-performance",
+    "title": "Slow or freezing workstation",
+    "summary": "Compare local and remote workloads to isolate sustained CPU, memory, disk, thermal, or application contention.",
+    "keywords": [
+      "computer is slow",
+      "laptop is slow",
+      "slow laptop",
+      "slow computer",
+      "slow workstation",
+      "keeps freezing",
+      "high cpu",
+      "high memory usage",
+      "disk at 100%",
+      "slow after login",
+      "computer lagging",
+      "spinning beachball",
+      "spinning beach ball"
+    ],
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Record onset and time of day. Compare a local task and one approved web task to distinguish one app, the entire workstation, or a remote service."
+      },
+      {
+        "id": "reproduce",
+        "text": "Ask for one reproducible action and collect the timing and power or dock state. Compare with a working device or user performing the same task."
+      },
+      {
+        "id": "measure",
+        "text": "During the slowdown, use Task Manager or Activity Monitor to record sustained CPU, memory pressure, and disk activity, along with free disk space and relevant top processes."
+      },
+      {
+        "id": "correlate",
+        "text": "Check for recent updates, indexing, backup, or managed security activity. Close user-approved applications after saving work. Route sustained managed-agent contention to its owner."
+      },
+      {
+        "id": "verify",
+        "text": "Repeat the same task and compare timings after each approved action. Escalate recurring freezes, hardware errors, or multi-device correlation with timestamps and measurements."
+      }
+    ],
+    "handoff": "Include asset ID, affected task, baseline and affected timing, CPU or memory or disk evidence, recent changes, and whether the issue persists on AC power or a comparable endpoint.",
+    "category": "Endpoint and hardware"
+  },
+  {
+    "id": "endpoint-storage",
+    "title": "Low disk space and local storage errors",
+    "summary": "Locate the affected volume and determine whether writes fail because of capacity, a quota, or a storage fault.",
+    "keywords": [
+      "disk full",
+      "disk is full",
+      "low disk space",
+      "storage full",
+      "no space left",
+      "not enough disk space",
+      "disk space",
+      "c drive full",
+      "c drive is full",
+      "scratch disk full",
+      "disk write error",
+      "disk i/o error",
+      "hard drive failure",
+      "startup disk is full"
+    ],
+    "checks": [
+      {
+        "id": "volume",
+        "text": "Capture the exact error and storage target. Check free space on the local volume, or check the applicable user, share, or cloud quota if only a remote location is affected."
+      },
+      {
+        "id": "inventory",
+        "text": "Use system storage settings or approved inventory tools to identify major categories such as downloads, cached content, update files, and approved offline sync folders."
+      },
+      {
+        "id": "preserve",
+        "text": "Confirm backup or sync status and ask the user to choose any personal files they want to remove. Use approved cleanup tools and follow retention rules for company data."
+      },
+      {
+        "id": "fault",
+        "text": "Route repeated I/O errors, an unexpectedly read-only volume, abnormal drive noises, or a failing disk health report to hardware support and preserve accessible data."
+      },
+      {
+        "id": "verify",
+        "text": "Record free space before and after approved cleanup, then retry the original write or installation. Escalate rapid refilling or unclear ownership of the files consuming space."
+      }
+    ],
+    "handoff": "Record asset ID, volume or sanitized path, requested operation, free space or quota readings, largest categories, cleanup performed, and any storage health evidence.",
+    "category": "Endpoint and hardware"
+  },
+  {
+    "id": "endpoint-update",
+    "title": "Operating system update failures",
+    "summary": "Identify the update and failure phase, then check eligibility, available storage, approved network access, and restart state.",
+    "keywords": [
+      "windows update",
+      "macos update",
+      "software update failed",
+      "os update failed",
+      "patch failed",
+      "update stuck",
+      "update rollback",
+      "updates pending restart",
+      "can't update windows",
+      "feature update failed",
+      "quality update failed"
+    ],
+    "checks": [
+      {
+        "id": "state",
+        "text": "Record the update identifier or target version, existing OS build, and exact error. Identify whether the update is downloading, installing, restarting, rolling back, or waiting for a restart."
+      },
+      {
+        "id": "scope",
+        "text": "Check whether similarly managed devices and the same update ring are affected. Review known rollout advisories and whether the model is eligible for the target build."
+      },
+      {
+        "id": "prerequisites",
+        "text": "Check available disk space, power, expected network access, management check-in, and restart status. Confirm the user can safely save work before restarting."
+      },
+      {
+        "id": "retry",
+        "text": "Perform one approved restart or retry through the managed update channel when prerequisites are satisfied. Route repeated failures or a reboot loop to endpoint support."
+      },
+      {
+        "id": "verify",
+        "text": "Confirm the installed build or update status, normal sign-in, and the impacted task. Escalate a shared rollout failure with affected models, builds, error codes, and ring."
+      }
+    ],
+    "handoff": "Include asset ID, update identifier, OS build, failure stage and error, storage and power checks, approved retry outcome, and whether similar devices are impacted.",
+    "category": "Endpoint and hardware"
+  },
+  {
+    "id": "managed-app-install",
+    "title": "Managed software installation and licensing",
+    "summary": "Determine whether installation is blocked by entitlement, platform requirements, delivery, a pending reboot, or activation.",
+    "keywords": [
+      "software center",
+      "company portal install",
+      "app install failed",
+      "app won't install",
+      "app wont install",
+      "software install failed",
+      "installer error",
+      "install stuck",
+      "managed software install",
+      "software deployment failed",
+      "license activation failed"
+    ],
+    "checks": [
+      {
+        "id": "stage",
+        "text": "Capture the app name, requested version, OS and architecture, exact error, and whether the app is missing, downloads slowly, fails installation, or fails to activate."
+      },
+      {
+        "id": "entitlement",
+        "text": "Check the correct work account, app catalog visibility, approved license assignment, device eligibility, and assignment state in the approved management system if authorized."
+      },
+      {
+        "id": "prerequisites",
+        "text": "Check free space, permitted network access, management check-in, and pending restart state. Compare with a similarly assigned device if multiple users are affected."
+      },
+      {
+        "id": "retry",
+        "text": "Retry once from the managed catalog after addressing an identified prerequisite. Record the deployment or job ID if accessible and route package or license errors to its owner."
+      },
+      {
+        "id": "verify",
+        "text": "Confirm the approved version launches, activates with the work account, and performs the requested task. Escalate repeated failures or assignment mismatches with evidence."
+      }
+    ],
+    "handoff": "Record app and version, asset ID, OS and architecture, catalog and entitlement state, deployment ID, failure stage, error code, and retry results.",
+    "category": "Endpoint and hardware"
+  },
+  {
+    "id": "device-enrollment",
+    "title": "Device enrollment and provisioning",
+    "summary": "Identify where setup stalls and check enrollment eligibility, management assignment, connectivity, and provisioning progress.",
+    "keywords": [
+      "autopilot",
+      "enrollment status page",
+      "device enrollment",
+      "mdm enrollment",
+      "cannot enroll",
+      "can't enroll",
+      "stuck on device setup",
+      "device provisioning",
+      "setup assistant",
+      "automated device enrollment",
+      "company portal enrollment"
+    ],
+    "checks": [
+      {
+        "id": "stage",
+        "text": "Record whether setup stops during network connection, work sign-in, management enrollment, profile delivery, or required app installation. Capture the exact error."
+      },
+      {
+        "id": "eligibility",
+        "text": "Verify approved device ownership, supported OS, organization assignment, enrollment permission, and available license through the management team or authorized console."
+      },
+      {
+        "id": "network",
+        "text": "Confirm required power and connectivity through an approved setup network. Check for a captive portal or an unsupported proxy before retrying setup."
+      },
+      {
+        "id": "compare",
+        "text": "Check whether the same enrollment profile and device model work elsewhere. Note recent ownership transfers, prior enrollment, or replacement hardware that may affect assignment."
+      },
+      {
+        "id": "verify",
+        "text": "After an approved retry, verify enrollment, management check-in, required apps and policies, and work sign-in. Route conflicting ownership, persistent provisioning failures, or reset requests to endpoint management."
+      }
+    ],
+    "handoff": "Include asset ID, model and OS, provisioning platform and phase, timestamp, exact error, enrollment profile status, network type, and outcome on any comparable device.",
+    "category": "Device management and mobile"
+  },
+  {
+    "id": "device-compliance",
+    "title": "Managed device compliance and access",
+    "summary": "Identify the device policy failure and verify that the affected app sees the current management state.",
+    "keywords": [
+      "device not compliant",
+      "device is not compliant",
+      "device noncompliant",
+      "device not in compliance",
+      "device is not in compliance",
+      "noncompliant device",
+      "conditional access device",
+      "device compliance",
+      "company portal compliance",
+      "device must be managed",
+      "device not managed",
+      "policy check failed"
+    ],
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Capture the exact access error, affected app, user account context, and which enrolled device is in use. Compare another approved app or eligible device if available."
+      },
+      {
+        "id": "state",
+        "text": "Check the reported compliance rule, last successful check-in, OS version, and management registration. Compare the management timestamp with the sign-in event."
+      },
+      {
+        "id": "resolve",
+        "text": "Use organization-approved remediation for the named requirement, such as applying a managed update or completing a pending restart. Verify ownership before changes."
+      },
+      {
+        "id": "sync",
+        "text": "Trigger the supported management sync when available and allow policy status to refresh. Record whether the management console and endpoint report the same state."
+      },
+      {
+        "id": "verify",
+        "text": "Retry the original work sign-in after policy evaluation. Route stale records, repeated mismatches, or broadly affected policies to endpoint management or identity with the correlation ID."
+      }
+    ],
+    "handoff": "Capture asset ID, app, timestamp and time zone, failed compliance rule, last device check-in, sign-in correlation ID, approved actions, and current result.",
+    "category": "Device management and mobile"
+  },
+  {
+    "id": "disk-encryption",
+    "title": "BitLocker and FileVault recovery",
+    "summary": "Identify a disk encryption recovery prompt and route authorized recovery through the organization’s verified process.",
+    "keywords": [
+      "bitlocker",
+      "filevault",
+      "recovery key",
+      "disk encryption recovery",
+      "bitlocker recovery screen",
+      "filevault recovery",
+      "startup recovery key",
+      "bitlocker keeps asking"
+    ],
+    "checks": [
+      {
+        "id": "prompt",
+        "text": "Identify the encryption product, prompt stage, and asset ID. Compare the prompt against the approved workflow and keep recovery values out of chat and tickets."
+      },
+      {
+        "id": "context",
+        "text": "Record recent firmware, hardware, boot configuration, or OS changes. Confirm whether one machine or a fleet after rollout is affected."
+      },
+      {
+        "id": "verify-owner",
+        "text": "Follow the approved identity and asset-ownership verification process before routing to an authorized recovery operator or approved self-service portal."
+      },
+      {
+        "id": "recover",
+        "text": "Use approved secure delivery and recovery procedures. Route missing escrow, asset mismatch, repeated prompts, or suspected tampering to the responsible endpoint or security team."
+      },
+      {
+        "id": "verify",
+        "text": "After authorized recovery, verify normal sign-in, access to expected work data, and healthy encryption and management state. Confirm whether the prompt recurs after an approved restart."
+      }
+    ],
+    "handoff": "Record asset ID, encryption product, prompt and recurrence, recent changes, approved verification outcome, and recovery routing. Keep actual recovery keys and screenshots that expose them out of the record.",
+    "category": "Device management and mobile"
+  },
+  {
+    "id": "mobile-work-profile",
+    "title": "iOS and Android work app access",
+    "summary": "Isolate a mobile issue to the work profile, approved app, account, enrollment, or device policy.",
+    "keywords": [
+      "work profile",
+      "work apps greyed out",
+      "work apps grayed out",
+      "android work profile",
+      "ios managed app",
+      "company email on phone",
+      "work app on phone",
+      "managed mobile app",
+      "mobile work email",
+      "phone work profile",
+      "mobile app protection"
+    ],
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Record the work app, device ownership type, OS and app versions, error, and whether all managed apps or only one app fail. Confirm Wi-Fi and cellular scope if approved."
+      },
+      {
+        "id": "profile",
+        "text": "Check whether the Android work profile is paused or the iOS app is marked managed. Confirm the approved work account and last successful management check-in."
+      },
+      {
+        "id": "policy",
+        "text": "Check for a required app or OS update, compliance finding, license assignment, or app protection message. Route a missing enrollment record to device enrollment."
+      },
+      {
+        "id": "action",
+        "text": "Use the approved app store or management workflow to open or update the app. Verify that the user can access any local unsynced work before app changes."
+      },
+      {
+        "id": "verify",
+        "text": "Confirm the work app opens and the original work action succeeds. Route unresolved policy, replacement-device, or ownership issues to mobile device management."
+      }
+    ],
+    "handoff": "Include managed asset or device reference, OS and app versions, ownership type, profile and sync status, affected work apps, policy error, and verification outcome.",
+    "category": "Device management and mobile"
+  },
+  {
+    "id": "display-docking",
+    "title": "External displays and docking stations",
+    "summary": "Follow the video and power path to isolate the monitor, input, cable, dock, host port, or display configuration.",
+    "keywords": [
+      "external monitor",
+      "second monitor",
+      "monitor not detected",
+      "monitor keeps flickering",
+      "monitor flickering",
+      "monitor no signal",
+      "black external screen",
+      "docking station",
+      "usb-c dock",
+      "laptop screen black but running",
+      "displayport",
+      "hdmi no signal",
+      "display not detected"
+    ],
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Determine whether the internal display works and whether one external display, all dock functions, or one port is affected. Record any recent desk or cable change."
+      },
+      {
+        "id": "connection",
+        "text": "Verify monitor and dock power, the selected monitor input, and the approved cable type. Check whether the operating system detects the external display."
+      },
+      {
+        "id": "isolate",
+        "text": "Test one monitor with a known-good supported cable directly to the host if available. Swap one element at a time and compare the dock on an approved working setup."
+      },
+      {
+        "id": "settings",
+        "text": "Check display mode, native resolution and supported refresh rate, dock power rating, and supported monitor count. Route managed driver or firmware changes to endpoint support."
+      },
+      {
+        "id": "verify",
+        "text": "Verify stable output, arrangement, and resolution after reattaching the dock. Escalate persistent failures tied to a host port, hardware combination, or updated dock software."
+      }
+    ],
+    "handoff": "Record device, dock and monitor models, port and cable types, monitor input, direct-connect results, display settings, and the exact combination that fails.",
+    "category": "Endpoint and hardware"
+  },
+  {
+    "id": "endpoint-input",
+    "title": "Keyboard, mouse, and USB accessories",
+    "summary": "Determine whether an input problem follows an accessory, a wireless link, the host port, or the application.",
+    "keywords": [
+      "keyboard not working",
+      "keyboard is not working",
+      "keyboard stopped working",
+      "mouse not working",
+      "mouse is not working",
+      "trackpad not working",
+      "trackpad is not working",
+      "touchpad not working",
+      "touchpad is not working",
+      "keys typing wrong",
+      "wrong keyboard layout",
+      "bluetooth mouse",
+      "bluetooth keyboard",
+      "usb accessory not detected"
+    ],
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Check whether the problem occurs at sign-in, across local applications, or only in a remote session. Verify language, keyboard layout, and intentional accessibility settings."
+      },
+      {
+        "id": "path",
+        "text": "Identify built-in, wired, receiver-based, or Bluetooth input. Check accessory power or charge and whether the OS reports the expected accessory."
+      },
+      {
+        "id": "isolate",
+        "text": "Try a supported known-good accessory or test the same device in an approved alternate port, with the dock or hub removed from the test where feasible."
+      },
+      {
+        "id": "action",
+        "text": "Use approved pairing or device settings for the confirmed accessory. Route broken ports, multiple USB failures, or managed device restrictions to endpoint support."
+      },
+      {
+        "id": "verify",
+        "text": "Verify the original input task in the affected app and a local app. Check whether the issue returns after sleep or reconnect if that was the trigger."
+      }
+    ],
+    "handoff": "Record asset and accessory model, connection mode, affected input and app, OS detection result, layout settings if relevant, and known-good comparison.",
+    "category": "Endpoint and hardware"
+  },
+  {
+    "id": "printing",
+    "title": "Printing, print queues, and scanning",
+    "summary": "Trace the path from the originating application through the queue or scan profile to the device and destination.",
+    "keywords": [
+      "printer offline",
+      "printer won't print",
+      "printer wont print",
+      "can't print",
+      "print queue",
+      "print spooler",
+      "stuck print job",
+      "paper jam",
+      "secure print",
+      "scan to email",
+      "scan to folder",
+      "can't scan",
+      "scanner not detected",
+      "printer is offline",
+      "cannot connect to printer",
+      "can't connect to printer"
+    ],
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Identify the printer or scanner and exact queue or profile. Check whether one document, user, workstation, or everyone using that device is affected."
+      },
+      {
+        "id": "device",
+        "text": "Check panel status, supplies, paper path, and expected network connection. Use the approved device procedure for hardware alerts and escalate persistent faults."
+      },
+      {
+        "id": "trace",
+        "text": "For print, verify destination, secure-release requirements, and the user’s job status. For scanning, verify the selected destination and check any delivery or permission error."
+      },
+      {
+        "id": "isolate",
+        "text": "Use a harmless single-page test or approved scan target. Compare a second client or application and route shared queue, permission, or delivery failures to the service owner."
+      },
+      {
+        "id": "verify",
+        "text": "Confirm the test page releases or the scan reaches its approved destination. Document duplicate or stuck jobs and follow the managed process before clearing a shared queue."
+      }
+    ],
+    "handoff": "Include device and queue or scan profile, panel or job error, scope, test result, sanitized destination or message trace reference, and whether secure release was involved.",
+    "category": "Endpoint and hardware"
+  },
+  {
+    "id": "endpoint-audio-camera",
+    "title": "Microphones, speakers, and webcams",
+    "summary": "Separate hardware detection, OS permissions and device selection from a single application or meeting issue.",
+    "keywords": [
+      "webcam not working",
+      "camera not detected",
+      "built-in camera",
+      "microphone not working",
+      "headset microphone",
+      "no microphone input",
+      "speakers not working",
+      "no sound from speakers",
+      "sound output device",
+      "audio input device",
+      "camera privacy shutter",
+      "webcam black screen"
+    ],
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Determine which input or output fails and whether the OS detects it. Test with approved local audio or camera settings and compare the affected application."
+      },
+      {
+        "id": "controls",
+        "text": "Check the physical mute, camera shutter, power, cable or Bluetooth connection, and OS volume or input level. Confirm the correct device is selected in the app."
+      },
+      {
+        "id": "permissions",
+        "text": "Review OS and application camera or microphone permissions under organization policy. Close other apps using the device after the user saves work."
+      },
+      {
+        "id": "isolate",
+        "text": "Compare a known-good compatible accessory or alternate approved port, then test outside the dock when feasible. Route policy blocks to the owner of device access controls."
+      },
+      {
+        "id": "verify",
+        "text": "Confirm input and output with the OS test and the original application. Escalate an accessory missing from the OS, recurring disconnects, or a managed driver failure."
+      }
+    ],
+    "handoff": "Record asset and accessory model, connection path, selected devices, physical controls and permissions, OS and app test results, and exact errors.",
+    "category": "Endpoint and hardware"
+  },
+  {
+    "id": "remote-desktop",
+    "title": "Remote Desktop connection and session errors",
+    "summary": "Separate client reachability, gateway, authorization, and host session failures along the approved Remote Desktop path.",
+    "keywords": [
+      "rdp",
+      "remote desktop",
+      "remote desktop can't connect",
+      "remote desktop disconnects",
+      "remote desktop black screen",
+      "remote desktop gateway",
+      "rd gateway",
+      "mstsc",
+      "remote session disconnected"
+    ],
+    "checks": [
+      {
+        "id": "stage",
+        "text": "Identify the approved target and client. Capture the error and whether it occurs during target lookup, gateway connection, sign-in, or after the desktop appears."
+      },
+      {
+        "id": "scope",
+        "text": "Compare whether one user or device is affected, multiple users fail on one target, or several targets fail through the same gateway. Record the timestamp and client version."
+      },
+      {
+        "id": "path",
+        "text": "Verify the expected network or VPN, approved target name and gateway settings, and any managed client advisory. Route certificate or identity warnings to the appropriate owner."
+      },
+      {
+        "id": "session",
+        "text": "Check the known service status and have an authorized operator confirm host availability, entitlement, and session state. Preserve unsaved work when arranging session recovery."
+      },
+      {
+        "id": "verify",
+        "text": "Verify a complete sign-in and the user’s original remote task. Escalate recurring disconnects, repeated gateway errors, or shared host failures with timestamps and scope."
+      }
+    ],
+    "handoff": "Capture sanitized target and gateway identifiers, client and VPN context, error stage and code, scope, authorized host or session checks, and result after recovery.",
+    "category": "Remote desktop and virtual workspaces"
+  },
+  {
+    "id": "virtual-desktop",
+    "title": "Virtual desktop and published app delivery",
+    "summary": "Trace virtual desktop failures from workspace subscription and entitlement through brokering, session host, and profile loading.",
+    "keywords": [
+      "vdi",
+      "citrix",
+      "azure virtual desktop",
+      "windows 365 cloud pc",
+      "cloud pc",
+      "vmware horizon",
+      "omnissa horizon",
+      "published app",
+      "no desktops available",
+      "desktop pool",
+      "avd feed",
+      "vdi profile failed"
+    ],
+    "checks": [
+      {
+        "id": "stage",
+        "text": "Record the platform and workspace or published app. Identify whether the issue affects the workspace feed, resource listing, launch, sign-in, profile loading, or how the session runs."
+      },
+      {
+        "id": "scope",
+        "text": "Compare the same user across approved clients and an authorized peer on the same pool. Check provider status and record account or pool scope."
+      },
+      {
+        "id": "broker",
+        "text": "Have an authorized operator check resource assignment, available capacity, session host registration, and the connection correlation ID. Compare the failure time with broker events."
+      },
+      {
+        "id": "client",
+        "text": "Verify the managed client version and approved workspace address. For an existing session, distinguish local client lag from one published app or profile problem."
+      },
+      {
+        "id": "verify",
+        "text": "Confirm the resource appears, launches, loads the expected profile, and allows the original work task. Route a shared pool failure or recurring profile storage error to virtual desktop operations."
+      }
+    ],
+    "handoff": "Record platform and workspace or pool reference, client type and version, error phase, session correlation ID, timing, affected resources, and approved peer comparison.",
+    "category": "Remote desktop and virtual workspaces"
+  },
+  {
+    "id": "endpoint-clock",
+    "title": "Device clock and time synchronization",
+    "summary": "Check device time, time zone, and synchronization when sign-in, certificates, or time-sensitive workflows report errors.",
+    "keywords": [
+      "wrong system time",
+      "computer clock wrong",
+      "clock is wrong",
+      "device time incorrect",
+      "time sync",
+      "clock skew",
+      "clock is ahead",
+      "clock is behind",
+      "wrong time zone on computer",
+      "time difference too large",
+      "ntp sync failed",
+      "time drift"
+    ],
+    "checks": [
+      {
+        "id": "compare",
+        "text": "Compare displayed time, date, and time zone with an approved reference. Record the offset and distinguish a display time zone issue from a system clock that has drifted."
+      },
+      {
+        "id": "scope",
+        "text": "Check whether the issue affects one device, devices on the same network, or a particular application. Record symptoms such as certificate warnings or sign-in error codes."
+      },
+      {
+        "id": "source",
+        "text": "Check the configured synchronization source and last successful sync through approved device settings or management tools. Confirm the device can reach its assigned network."
+      },
+      {
+        "id": "action",
+        "text": "Use the managed time configuration or an approved resync. Route policy-protected settings, unreliable time sources, or devices drifting after shutdown to endpoint or infrastructure support."
+      },
+      {
+        "id": "verify",
+        "text": "Verify time and time zone, then repeat the affected task. Check for recurrence after sleep or restart if relevant. Route persistent certificate warnings to the service owner."
+      }
+    ],
+    "handoff": "Include asset ID, observed and expected time with time zone, time offset, synchronization source and status if available, apps affected, and approved resync outcome.",
+    "category": "Endpoint and hardware"
+  },
+  {
+    "id": "mail-delivery",
+    "title": "Email delivery and bouncebacks",
+    "summary": "Trace missing, delayed, or bounced mail through submission, transport, and recipient delivery.",
+    "keywords": [
+      "email not received",
+      "email not sending",
+      "mail not delivered",
+      "email delivery",
+      "mail delay",
+      "bounceback",
+      "bounce back",
+      "non-delivery report",
+      "undeliverable",
+      "ndr",
+      "stuck in outbox",
+      "missing inbound mail",
+      "missing outbound mail",
+      "smtp error",
+      "not receiving emails",
+      "can't send email",
+      "mailbox is full",
+      "not getting emails"
+    ],
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Capture the send time and time zone, direction, number of affected senders and recipients, and any non-delivery code. Confirm the address or recipient domain through an approved directory."
+      },
+      {
+        "id": "submission",
+        "text": "Compare Outbox, Sent, and approved webmail. A message stuck in Outbox points toward submission, while Sent shows client submission and still needs a delivery check."
+      },
+      {
+        "id": "trace",
+        "text": "Ask an authorized messaging operator to look up the message trace by time and message ID. A temporary deferral can still be retried by transport. A permanent rejection needs the diagnostic reason and responsible system before anyone resends."
+      },
+      {
+        "id": "recipient",
+        "text": "If trace shows delivery, check filtered views, Junk, quarantine, and permitted inbox rules with the recipient. For external delivery, ask the external mail owner for the disposition through the approved channel."
+      },
+      {
+        "id": "verify",
+        "text": "Use a single harmless test message over the same path when authorized. Verify both the trace result and recipient visibility. Escalate growing delays, recurring rejection, or a shared connector or domain failure to Messaging."
+      }
+    ],
+    "handoff": "Record mail direction, affected domains, timestamp and zone, message ID or trace reference, rejection or disposition, client comparison, and confirming test result. Keep message bodies in approved evidence storage.",
+    "category": "Email and calendars"
+  },
+  {
+    "id": "mail-client-sync",
+    "title": "Email client sync and offline mode",
+    "summary": "Separate local mail client issues from mailbox, service, or connectivity failures.",
+    "keywords": [
+      "outlook not updating",
+      "outlook not syncing",
+      "outlook disconnected",
+      "outlook working offline",
+      "outlook keeps crashing",
+      "mail app not updating",
+      "mail not syncing",
+      "email not syncing",
+      "outlook sync error",
+      "outlook offline",
+      "webmail works but outlook",
+      "mail client sync"
+    ],
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Record client, OS, mailbox type, exact status, and last successful sync. Identify whether only mail, a shared mailbox, calendar, or the entire profile is stale."
+      },
+      {
+        "id": "compare",
+        "text": "Open the same mailbox in approved webmail and compare one known message or appointment. A current web view points toward the client, while a stale web view warrants mailbox or service checks."
+      },
+      {
+        "id": "client",
+        "text": "Check offline status, available disk space, device connectivity, and the managed client's update state. Ask whether the issue began after an update, device replacement, or account change."
+      },
+      {
+        "id": "recover",
+        "text": "If the user enabled offline mode, return the client to online mode through its normal controls. Save drafts before closing and reopening it. Preserve local-only folders or drafts before an authorized profile repair."
+      },
+      {
+        "id": "verify",
+        "text": "Verify a harmless test message appears in both client and webmail and that the affected folder or calendar updates. Route persistent single-client failures to Endpoint Support and multi-user or webmail failures to Messaging."
+      }
+    ],
+    "handoff": "Record client and OS versions, affected folders or mailbox type, last sync time, webmail comparison, status or error, and any local-only data requiring protection.",
+    "category": "Email and calendars"
+  },
+  {
+    "id": "mail-quarantine",
+    "title": "Junk and quarantined email",
+    "summary": "Locate a missing message and route spam or quarantine decisions through the messaging policy.",
+    "keywords": [
+      "email in quarantine",
+      "quarantined email",
+      "quarantine notification",
+      "quarantine digest",
+      "spam quarantine",
+      "missing email in junk",
+      "message marked as spam",
+      "email going to junk",
+      "release quarantined email",
+      "mail spam filter",
+      "legitimate mail blocked"
+    ],
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Record the expected sender domain, approximate send time, affected count, and the message ID if available. Open the approved mail security portal from a known bookmark or organization link."
+      },
+      {
+        "id": "location",
+        "text": "Distinguish an item in the mailbox Junk folder from service-level quarantine or transport rejection. Review the available disposition, category, and release eligibility in the approved interface."
+      },
+      {
+        "id": "trust",
+        "text": "Use a known contact channel to confirm an unexpected message. If indicators suggest phishing, impersonation, or malware, report it through Security and preserve the message reference without opening links or attachments."
+      },
+      {
+        "id": "review",
+        "text": "Use the approved false-positive review process. A policy-authorized reviewer should assess any release or exception based on the disposition and purpose."
+      },
+      {
+        "id": "verify",
+        "text": "If approved for release, confirm the item reaches the intended mailbox and record the outcome. Escalate repeated false positives for a domain or multiple recipients to Messaging and Security for policy review."
+      }
+    ],
+    "handoff": "Record the message or quarantine reference, sender domain, time and zone, disposition, recipient count, review request, and delivery outcome.",
+    "category": "Email and calendars"
+  },
+  {
+    "id": "shared-mailbox",
+    "title": "Shared mailbox access and sending",
+    "summary": "Distinguish shared mailbox discovery, read access, and delegated send permissions.",
+    "keywords": [
+      "shared mailbox",
+      "shared inbox",
+      "shared mailbox missing",
+      "send as",
+      "send on behalf",
+      "shared mailbox permissions",
+      "cannot open shared mailbox",
+      "mailbox delegation",
+      "shared inbox access"
+    ],
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Identify the shared mailbox and failing operation. Separate opening a folder, seeing the mailbox in a client, replying, and sending from the shared address. Capture the exact error and onset."
+      },
+      {
+        "id": "compare",
+        "text": "Compare access through approved webmail and the affected client. Ask whether an existing authorized delegate can perform the same operation without sharing credentials."
+      },
+      {
+        "id": "entitlement",
+        "text": "Ask the mailbox owner or messaging administrator to check the approved access request and the specific read, send-as, or send-on-behalf entitlement. Confirm the correct mailbox and principal before requesting a correction."
+      },
+      {
+        "id": "recover",
+        "text": "Once the owner confirms permissions are effective, follow the approved add-mailbox workflow if the mailbox is missing only from the client. Preserve local data if support considers profile repair."
+      },
+      {
+        "id": "verify",
+        "text": "Confirm the user can perform the originally failing operation and, for send issues, verify the visible sender with a harmless test to an approved recipient. Route confirmed permission or backend errors to Messaging."
+      }
+    ],
+    "handoff": "Record the shared mailbox reference, failing operation, client and web results, expected entitlement, approval or assignment status, and exact send or access error.",
+    "category": "Email and calendars"
+  },
+  {
+    "id": "mailing-list",
+    "title": "Mailing list and group mail",
+    "summary": "Identify group delivery restrictions, moderation, membership, and subscription issues.",
+    "keywords": [
+      "distribution list",
+      "distribution group",
+      "mailing list",
+      "group mail not received",
+      "email group not receiving",
+      "group email bounced",
+      "group moderation",
+      "not receiving group emails",
+      "listserv"
+    ],
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Capture which list was addressed, when it was sent, and whether the sender received a rejection or moderation notice. Find out if all members or only selected recipients are missing mail."
+      },
+      {
+        "id": "group",
+        "text": "Confirm the approved directory entry and group type with the owner. A mailbox-backed collaboration group can have different inbox subscription behavior from a distribution list."
+      },
+      {
+        "id": "policy",
+        "text": "Have the owner check membership or subscription, pending moderation, delivery restrictions, and whether the sender is authorized. Confirm the applicable rule before opening a group-change request."
+      },
+      {
+        "id": "trace",
+        "text": "Have an authorized messaging operator review a failing trace for group acceptance, expansion, and downstream recipient delivery. Keep membership details in access-controlled tooling."
+      },
+      {
+        "id": "verify",
+        "text": "Confirm a harmless approved test reaches the intended member or group location. Escalate unresolved expansion failures to Messaging and entitlement decisions to the group owner."
+      }
+    ],
+    "handoff": "Record group reference and type, timestamp and zone, sender category, affected member count, moderation or delivery disposition, and the owner or trace reference.",
+    "category": "Email and calendars"
+  },
+  {
+    "id": "mail-attachments",
+    "title": "Blocked or oversized email attachments",
+    "summary": "Distinguish attachment size, file type, encryption, and data protection policy blocks.",
+    "keywords": [
+      "attachment too large",
+      "attachment blocked",
+      "outlook attachment blocked",
+      "cannot attach file",
+      "can't attach file",
+      "cannot open email attachment",
+      "email attachment limit",
+      "attachment won't send",
+      "message blocked by policy",
+      "email dlp",
+      "email encryption error"
+    ],
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Capture the attachment extension and size, where the failure occurs, and whether an internal or external recipient is involved. Record the exact policy or error message without copying the attachment."
+      },
+      {
+        "id": "compare",
+        "text": "Try an approved small harmless file if authorized and compare the managed client with approved webmail. A normal test paired with a blocked original points to the file, size, or sharing policy."
+      },
+      {
+        "id": "classification",
+        "text": "Check the visible classification or encryption requirement and the approved transfer method with the data owner. Direct suspected unsafe attachments to Security for review."
+      },
+      {
+        "id": "recover",
+        "text": "For a permitted transfer, use the organization-approved file-sharing service with the intended recipient and required protection settings. Refer exception requests to the appropriate policy owner."
+      },
+      {
+        "id": "verify",
+        "text": "Confirm the intended recipient can open the approved copy through their normal account. Escalate unexplained rejections or repeated encrypted-attachment failures to Messaging or the data protection owner."
+      }
+    ],
+    "handoff": "Record size, file type, internal or external direction, error or policy identifier, safe comparison result, and the approved transfer or review status.",
+    "category": "Email and calendars"
+  },
+  {
+    "id": "calendar-booking",
+    "title": "Calendar invitations and room booking",
+    "summary": "Trace missing meetings, room declines, wrong times, and calendar delegation issues.",
+    "keywords": [
+      "room booking",
+      "conference room declined",
+      "room mailbox",
+      "calendar invite missing",
+      "meeting invitation missing",
+      "calendar delegate",
+      "calendar permission",
+      "calendar invite wrong time",
+      "meeting changed time",
+      "calendar not updating",
+      "free busy"
+    ],
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Identify the organizer, affected attendee or room, start time and time zone, and whether the event is recurring. Separate missing events, booking declines, time display, and delegate access."
+      },
+      {
+        "id": "compare",
+        "text": "Compare the organizer's event and attendee or room response in approved web calendars. For recurrence, confirm whether the issue affects one occurrence or the series."
+      },
+      {
+        "id": "settings",
+        "text": "Check time-zone display, booking conflicts, invite status, and visible room restrictions. For delegate or cross-tenant free/busy failures, ask the calendar owner to verify the approved permission and sharing settings."
+      },
+      {
+        "id": "recover",
+        "text": "Ask the organizer to send a scoped update if the event or time was entered incorrectly. A resource owner should review unexplained room policy declines or conflicting reservations."
+      },
+      {
+        "id": "verify",
+        "text": "Verify organizer and attendee see the intended event time and that the room is accepted where applicable. Route persistent inconsistencies or multi-user free/busy issues to Messaging or Collaboration."
+      }
+    ],
+    "handoff": "Record event or room reference, time and zone, recurrence scope, organizer and attendee views, acceptance or decline details, and permission context. Omit private event content.",
+    "category": "Email and calendars"
+  },
+  {
+    "id": "meeting-join",
+    "title": "Video meeting join and access",
+    "summary": "Determine whether a meeting join failure comes from the invitation, account, client, or meeting policy.",
+    "keywords": [
+      "can't join meeting",
+      "cannot join meeting",
+      "teams meeting won't open",
+      "can't join teams",
+      "cannot join zoom",
+      "can't join zoom",
+      "meeting link not working",
+      "stuck in meeting lobby",
+      "guest cannot join meeting",
+      "zoom waiting room",
+      "meeting passcode"
+    ],
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Capture the exact join error, meeting platform, scheduled time, who can join, and whether the attendee is internal or a guest. Confirm the attendee used the current organizer-issued invitation."
+      },
+      {
+        "id": "context",
+        "text": "Check which work or guest account the meeting client selected. Determine whether the attendee reaches a lobby, receives a policy denial, or fails before the meeting client opens."
+      },
+      {
+        "id": "compare",
+        "text": "Compare the managed desktop client and supported web join when allowed. If both fail while other meetings work, ask the organizer to review this meeting's guest, registration, or lobby policy."
+      },
+      {
+        "id": "recover",
+        "text": "Have the organizer confirm the attendee's invitation or admit the attendee through normal controls after confirming their identity. Use an alternate approved meeting method when the organizer's process allows it."
+      },
+      {
+        "id": "verify",
+        "text": "Confirm the attendee joins as the expected role. Escalate policy or cross-tenant failures to Collaboration, and platform-wide symptoms through incident management."
+      }
+    ],
+    "handoff": "Record meeting platform and approved meeting reference, scheduled time, attendee category, join stage, client versus web result, and organizer policy findings. Keep invitation tokens and passcodes out of notes.",
+    "category": "Meetings and messaging"
+  },
+  {
+    "id": "meeting-audio-video",
+    "title": "Meeting audio, video, and screen sharing",
+    "summary": "Isolate meeting media and presentation problems to device selection, permissions, policy, or connection quality.",
+    "keywords": [
+      "teams mic not working",
+      "zoom mic not working",
+      "teams camera not working",
+      "zoom camera not working",
+      "can't hear in meeting",
+      "cannot hear in meeting",
+      "meeting audio cutting out",
+      "meeting video freezing",
+      "screen share not working",
+      "can't share screen",
+      "meeting echo",
+      "meeting audio problem",
+      "teams keeps dropping calls",
+      "zoom keeps dropping calls",
+      "can't hear anyone in teams"
+    ],
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Identify which direction of audio or video fails and whether the issue affects one attendee, one call, or all meetings. For presentation, check whether the sharing control is unavailable or the audience cannot see the content."
+      },
+      {
+        "id": "device",
+        "text": "Check the selected microphone, speaker, and camera in the meeting client, hardware mute, privacy shutter, and approved OS or browser permissions. Use the built-in test call or preview with the user's consent."
+      },
+      {
+        "id": "compare",
+        "text": "Compare the failing accessory with a known working device or the built-in hardware, and compare the supported web and desktop clients when permitted. Check visible call quality if audio drops or video freezes."
+      },
+      {
+        "id": "policy",
+        "text": "For blocked screen sharing, confirm the presenter role, meeting policy, and screen capture permission. Test using harmless content and have the organizer or endpoint owner resolve any approved setting change."
+      },
+      {
+        "id": "verify",
+        "text": "Run a short test with another participant for two-way audio, video, or screen visibility. Route recurring packet loss to Network Operations, consistent hardware failure to Endpoint Support, and meeting policy errors to Collaboration."
+      }
+    ],
+    "handoff": "Record platform and version, media direction or share symptom, selected device, client and hardware comparison, available call quality metrics, and test outcome.",
+    "category": "Meetings and messaging"
+  },
+  {
+    "id": "collaboration-chat",
+    "title": "Chat messages and notifications",
+    "summary": "Troubleshoot missing channels, delayed messages, and suppressed notifications in collaboration clients.",
+    "keywords": [
+      "slack notifications",
+      "teams notifications",
+      "chat notifications",
+      "teams message not showing",
+      "slack messages delayed",
+      "missing channel",
+      "slack channel missing",
+      "teams channel missing",
+      "chat message not delivered",
+      "not getting notifications"
+    ],
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Record the platform, workspace or tenant, affected channel or chat, and last known working time. Separate missing content, posting failure, and missing alerts for content that is visible."
+      },
+      {
+        "id": "compare",
+        "text": "Compare the same conversation in the approved web and managed desktop or mobile clients. Verify the selected workspace and whether another authorized member can see the affected channel."
+      },
+      {
+        "id": "notifications",
+        "text": "Check channel mute or mention settings, client notification schedule, OS focus mode and notification permissions, and whether the app suppresses mobile alerts while the desktop is active."
+      },
+      {
+        "id": "membership",
+        "text": "For a missing private channel or posting restriction, ask an owner to verify the user's approved membership, guest status, or channel policy. For visible but stale content, check service health and client update state."
+      },
+      {
+        "id": "verify",
+        "text": "Use a harmless test message or mention in an approved test chat and verify visibility and the expected alert. Escalate cross-client or multi-user failures to Collaboration and device-only alert issues to Endpoint Support."
+      }
+    ],
+    "handoff": "Record platform and workspace reference, affected client and channel type, delivery versus alert symptom, membership or policy finding, and test time and outcome. Omit private chat content.",
+    "category": "Meetings and messaging"
+  },
+  {
+    "id": "cloud-file-sync",
+    "title": "Cloud file sync and stale versions",
+    "summary": "Identify sync stalls, conflicts, quota issues, and local-only edits in managed cloud storage.",
+    "keywords": [
+      "onedrive not syncing",
+      "sharepoint not syncing",
+      "google drive not syncing",
+      "drive for desktop sync",
+      "file sync stuck",
+      "sync pending",
+      "sync conflict",
+      "onedrive sync error",
+      "file version mismatch",
+      "onedrive red x",
+      "files not uploading",
+      "sync client",
+      "onedrive files show a red x"
+    ],
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Identify the affected sync client, account, library and subset of files, start time, and visible sync status or error. Check whether the issue began after moving a folder, losing connectivity, or changing accounts."
+      },
+      {
+        "id": "compare",
+        "text": "Compare the approved web library with the local view. Check which copy has the expected content and modification time. A current web copy with a stale client points toward local sync."
+      },
+      {
+        "id": "limits",
+        "text": "Check visible sync status for paused activity, sign-in prompts, full device or cloud storage, unsupported names, or permission errors. Preserve locally edited and conflicted copies before any reset or unlink."
+      },
+      {
+        "id": "recover",
+        "text": "Use the client’s normal resume control if the user paused syncing and connectivity is healthy. For a conflict, have the file owner compare versions and decide how to preserve both sets of edits."
+      },
+      {
+        "id": "verify",
+        "text": "Test a harmless file in the authorized library and compare local and web views. Confirm the affected edits are present before closing. Route persistent client errors to Endpoint Support and shared quota or library errors to Collaboration."
+      }
+    ],
+    "handoff": "Record account context, library reference, affected count, local and cloud modification times, sync error, quota or permission finding, and where local-only edits were preserved.",
+    "category": "Files, storage, and sharing"
+  },
+  {
+    "id": "cloud-file-sharing",
+    "title": "Cloud file sharing and permission errors",
+    "summary": "Diagnose denied links, guest access, expired sharing, and unexpected view or edit rights.",
+    "keywords": [
+      "sharepoint access denied",
+      "onedrive access denied",
+      "google drive access denied",
+      "sharepoint request access",
+      "file sharing link expired",
+      "shared link only works for some",
+      "guest cannot open file",
+      "google doc need access",
+      "sharepoint permissions",
+      "can't edit shared file",
+      "cloud file sharing",
+      "request access to file"
+    ],
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Identify the approved file or library reference, intended role, internal or guest status, and error. Determine whether one item, a folder, or the whole site is affected."
+      },
+      {
+        "id": "context",
+        "text": "Check the recipient's account and tenant in the approved browser profile. Have the owner confirm that the link points to the current item and was issued to the intended recipient or group."
+      },
+      {
+        "id": "policy",
+        "text": "Ask an authorized owner to review effective permissions, inheritance, link expiration, guest invitation status, and sensitivity restrictions. Keep any bearer-style link or invitation token out of the ticket."
+      },
+      {
+        "id": "recover",
+        "text": "Route permission or external sharing requests through the data owner's approval workflow. If policy and approval permit, the owner can replace an expired or misplaced link with one scoped to the intended recipient and role."
+      },
+      {
+        "id": "verify",
+        "text": "Have the recipient open the item in the expected account and confirm the approved view or edit access. Escalate unexpected restrictions to Collaboration and conflicting classification policy to the data owner."
+      }
+    ],
+    "handoff": "Record the internal item reference, intended role, recipient category, site or tenant context, exact error, and the owner’s approved access decision.",
+    "category": "Files, storage, and sharing"
+  },
+  {
+    "id": "file-share",
+    "title": "Network shares and mapped drives",
+    "summary": "Separate network path failures, unavailable drives, and file share permission problems.",
+    "keywords": [
+      "mapped drive",
+      "network drive missing",
+      "network share",
+      "file share access denied",
+      "smb share",
+      "unc path",
+      "network path was not found",
+      "shared drive disappeared",
+      "drive mapping",
+      "can't access network folder",
+      "network drive access denied"
+    ],
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Capture the affected share reference, operation, error, OS, and network or VPN state. Check whether the issue affects one drive mapping, the whole share, or multiple users."
+      },
+      {
+        "id": "path",
+        "text": "Compare the mapped drive with the known approved network path under the same account. If the path works but the mapped drive fails, check the organization's standard mapping policy."
+      },
+      {
+        "id": "compare",
+        "text": "If the path cannot be reached, verify corporate connectivity and name resolution on the approved network. If the share opens but an operation is denied, have the owner review effective folder and share rights for that operation."
+      },
+      {
+        "id": "recover",
+        "text": "Use approved instructions to reconnect the mapping when the path is reachable and no active work depends on it. Route entitlements through the data owner and preserve unsaved or offline changes."
+      },
+      {
+        "id": "verify",
+        "text": "Open the expected folder and confirm the approved operation. Use only a designated test folder for writes. Escalate multi-user path failures to Storage or Network Operations and unresolved permissions to the share owner."
+      }
+    ],
+    "handoff": "Record the approved share reference, mapped versus direct-path result, network or VPN state, effective permission or error, affected scope, and validation.",
+    "category": "Files, storage, and sharing"
+  },
+  {
+    "id": "file-recovery",
+    "title": "Deleted, overwritten, or missing files",
+    "summary": "Find the latest recoverable copy while preserving existing work and the evidence of what changed.",
+    "keywords": [
+      "deleted file",
+      "recover a file",
+      "restore deleted file",
+      "overwrote file",
+      "previous file version",
+      "recover overwritten",
+      "file disappeared",
+      "missing document",
+      "restore from recycle bin",
+      "restore file version",
+      "recover unsaved document"
+    ],
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Identify the file, original location, owner, last known good time and zone, and whether deletion, movement, overwrite, or an unsaved edit is suspected."
+      },
+      {
+        "id": "locate",
+        "text": "Check the approved workspace search, recent items, trash or recycle bin, version history, and relevant activity logs as permitted. Compare local and web views for a synced location."
+      },
+      {
+        "id": "preserve",
+        "text": "Preserve any current or local-only copies and confirm the target version with the owner. For many unexpected changes, possible ransomware, or suspicious activity, route immediately to Security and preserve evidence."
+      },
+      {
+        "id": "recover",
+        "text": "Use an authorized restore method and prefer a separate recovery location when supported so existing work stays available. Have the storage or backup owner check recoverability if self-service options are absent."
+      },
+      {
+        "id": "verify",
+        "text": "Have the owner open the recovered item and verify the expected content, version time, and permissions before replacing any working copy. Escalate unavailable recovery points, broad data loss, or business-critical restores."
+      }
+    ],
+    "handoff": "Record the authorized item reference, last known good time and zone, checked recovery locations, candidate version, protected existing copies, and owner validation.",
+    "category": "Files, storage, and sharing"
+  },
+  {
+    "id": "browser-app",
+    "title": "Browser and web application errors",
+    "summary": "Isolate a web workflow failure to the browser, session, managed policy, or application service.",
+    "keywords": [
+      "website blank page",
+      "web app blank page",
+      "web app won't load",
+      "browser error",
+      "browser console error",
+      "site works in another browser",
+      "page keeps refreshing",
+      "form won't submit",
+      "browser cache issue",
+      "browser extension conflict",
+      "browser compatibility",
+      "pop-up blocked",
+      "popup blocked"
+    ],
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Capture the approved site, affected workflow, last known working time, browser version, and exact symptom. Find out whether the user can open the home page and where the workflow stops."
+      },
+      {
+        "id": "compare",
+        "text": "Compare with a second supported managed browser or profile and an authorized peer if available. Check service status and whether the failure affects another approved workflow."
+      },
+      {
+        "id": "profile",
+        "text": "If the problem follows one browser profile, check visible site settings, extension or policy status, and whether the session needs renewal. Keep authentication cookies, tokens, request bodies, and unredacted browser traces out of tickets."
+      },
+      {
+        "id": "recover",
+        "text": "Save drafts and confirm whether a transaction completed before retrying. When the app owner permits, clear only the affected site's data after explaining it may sign the user out or remove local drafts."
+      },
+      {
+        "id": "verify",
+        "text": "Repeat a safe version of the original workflow and confirm its intended result. Route unsupported or policy-managed browser settings to Endpoint Support and repeated workflow failures or server errors to the application owner."
+      }
+    ],
+    "handoff": "Record the app, workflow step, browser and OS version, device and peer comparison, visible error or correlation ID, and whether any transaction may already have completed.",
+    "category": "Applications and service requests"
+  },
+  {
+    "id": "service-disruption",
+    "title": "Cloud service degradation and outage",
+    "summary": "Correlate a SaaS failure with tenant, region, feature, and provider incident status before assigning ownership.",
+    "keywords": [
+      "service down for everyone",
+      "saas outage",
+      "cloud service outage",
+      "multiple users can't access",
+      "multiple users affected",
+      "vendor outage",
+      "service degraded",
+      "status page",
+      "tenant outage",
+      "app outage"
+    ],
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Record the failing service and workflow, start time and zone, affected users or business functions, locations or tenants, and whether a workaround exists."
+      },
+      {
+        "id": "compare",
+        "text": "Confirm with a second authorized user or service monitor on an independent path if available. Check whether other services on the same identity provider, network, or tenant also fail."
+      },
+      {
+        "id": "correlate",
+        "text": "Compare the symptom with internal incident records, approved provider status, and recent changes. Check the reported region, feature, and timeline before linking tickets to an existing incident."
+      },
+      {
+        "id": "vendor",
+        "text": "If the provider owns the failing dependency, have the service owner link the tenant or vendor incident and provide a sanitized problem statement with region, time, feature, and affected cohort. Track the vendor update time under the internal ticket."
+      },
+      {
+        "id": "verify",
+        "text": "After recovery, verify the original workflow with representative affected users, locations, or accounts and check for processing backlog. Escalate sustained business-critical impact, uncertain scope, or an expanding outage to the incident lead."
+      }
+    ],
+    "handoff": "Record impact and current trend, start time and zone, independent checks, correlated incident or change, approved workaround, current owner, and next update time.",
+    "category": "Incident operations"
+  },
+  {
+    "id": "application-license",
+    "title": "Application licensing and activation",
+    "summary": "Distinguish missing entitlements, exhausted seats, and device or account activation problems.",
+    "keywords": [
+      "license expired",
+      "licence expired",
+      "license not assigned",
+      "no license available",
+      "no licence available",
+      "unlicensed product",
+      "activation failed",
+      "software not activated",
+      "license server unavailable",
+      "subscription not recognized",
+      "app license",
+      "office activation",
+      "license seat"
+    ],
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Capture the product, edition, device, account context, activation stage, and error. Check whether this is a new install, replacement device, renewal, or a previously working installation."
+      },
+      {
+        "id": "entitlement",
+        "text": "Ask an authorized license operator to confirm the correct product and tenant, active assignment, provisioning state, and available seats where applicable."
+      },
+      {
+        "id": "compare",
+        "text": "Check whether the same approved account can use the web version or another permitted device. For managed license servers, ask the owner to confirm service status and approved connectivity."
+      },
+      {
+        "id": "recover",
+        "text": "Use the approved sign-in and activation workflow after confirming entitlement. Route new allocation, seat transfers, expired subscriptions, or out-of-policy editions to Software Asset Management."
+      },
+      {
+        "id": "verify",
+        "text": "Confirm the app reports the correct activation state and the entitled feature works. Escalate recurring activation failures with the exact error and time. Keep product keys out of tickets and chat."
+      }
+    ],
+    "handoff": "Record product, edition and version, activation error and timestamp, license assignment or seat status, affected scope, and validation or provisioning request reference.",
+    "category": "Applications and service requests"
+  },
+  {
+    "id": "application-access",
+    "title": "Application roles and provisioning",
+    "summary": "Distinguish successful sign-in from missing app access, assignment, role, or workspace membership.",
+    "keywords": [
+      "app role missing",
+      "application access",
+      "access denied after login",
+      "signed in but access denied",
+      "user not provisioned",
+      "role not assigned",
+      "permission missing in app",
+      "new user can't access app",
+      "missing app tile",
+      "user provisioning",
+      "app workspace access",
+      "cannot see records in app",
+      "don't have access to the app",
+      "don't have access to an application"
+    ],
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Identify the app and tenant, the authorized operation expected, the actual error, and the last known working time. Separate sign-in failure from missing permission after a successful sign-in."
+      },
+      {
+        "id": "context",
+        "text": "Confirm the user is in the correct account, tenant, workspace, and environment. Determine whether the entire app is missing or only an action, dataset, or resource is unavailable."
+      },
+      {
+        "id": "entitlement",
+        "text": "Ask the authorized app owner to check approved assignment, group membership, license, app role, and provisioning status as applicable. Compare expected access with documented roles while protecting other users' data."
+      },
+      {
+        "id": "recover",
+        "text": "Use the normal access request or approved correction process for the minimum required role. Confirm the effective assignment with the owner before refreshing the app session through the normal sign-in workflow."
+      },
+      {
+        "id": "verify",
+        "text": "Have the user verify the originally requested operation within their approved scope. Route wrong role or resource access to the application owner, provisioning errors to Identity, and unexplained elevated access to Security."
+      }
+    ],
+    "handoff": "Record app and tenant, authorized role and operation, sign-in outcome, provisioning status or error, access request or owner reference, and final operation check.",
+    "category": "Applications and service requests"
+  },
+  {
+    "id": "service-request",
+    "title": "IT service requests and fulfillment",
+    "summary": "Route onboarding, software, equipment, and routine changes through the correct fulfillment workflow.",
+    "keywords": [
+      "service request",
+      "new hire onboarding",
+      "new starter setup",
+      "employee onboarding",
+      "request equipment",
+      "request a laptop",
+      "software request",
+      "request a software install",
+      "employee offboarding",
+      "new user setup",
+      "request new hardware"
+    ],
+    "checks": [
+      {
+        "id": "scope",
+        "text": "Confirm the requested service, business need, due date and time zone, and which person or asset is in scope. If something previously worked and now fails, record an incident for the affected service."
+      },
+      {
+        "id": "catalog",
+        "text": "Select the current service catalog item and check its required approvals and prerequisites. Link related requests so device, software, and account tasks can proceed in the right order."
+      },
+      {
+        "id": "authorization",
+        "text": "Use the normal approver and data owner workflow for access or procurement. Route urgent offboarding, unusual entitlement requests, or conflicting dates to the responsible owner."
+      },
+      {
+        "id": "fulfill",
+        "text": "Record the fulfillment owner, the next dependency, and the update due date. Use approved deployment and handover channels, and confirm responsibility for any asset return or access removal."
+      },
+      {
+        "id": "verify",
+        "text": "Verify required assets or services reach the intended recipient and work within the approved scope. For offboarding, have the authorized owner confirm completed actions against the request before closing."
+      }
+    ],
+    "handoff": "Record request reference, authorized scope, due date and zone, approval status, dependencies, fulfillment owner, and acceptance or closure criteria.",
+    "category": "Applications and service requests"
   }
 ]

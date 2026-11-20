@@ -1,13 +1,14 @@
 import json
 import os
 import unittest
+from collections import Counter
 from contextlib import ExitStack
 from unittest.mock import patch
 
 import httpx
 from fastapi.testclient import TestClient
 
-from ops_copilot import DEFAULT_MODEL, RUNBOOKS, Settings, answer
+from ops_copilot import DEFAULT_MODEL, RUNBOOKS, Settings, answer, normalize
 
 
 class DemoApiTests(unittest.TestCase):
@@ -48,6 +49,45 @@ class DemoApiTests(unittest.TestCase):
         response = self.post_chat("I CAN'T COMPLETE MFA AFTER REPLACING MY PHONE.")
         self.assertEqual(response.status_code, 200)
         self.assertEqual([source["id"] for source in response.json()["sources"]], ["identity"])
+
+    def test_catalog_runbooks_are_reachable_and_render_all_checks(self):
+        keyword_counts = Counter(
+            keyword
+            for runbook in RUNBOOKS
+            for keyword in {normalize(keyword) for keyword in runbook["keywords"]}
+        )
+        for runbook in RUNBOOKS:
+            with self.subTest(runbook=runbook["id"]):
+                phrases = [
+                    keyword for keyword in runbook["keywords"]
+                    if len(normalize(keyword).split()) > 1 and keyword_counts[normalize(keyword)] == 1
+                ]
+                self.assertTrue(phrases, "Each runbook needs a distinct symptom phrase.")
+                response = self.post_chat(phrases[0])
+                self.assertEqual(response.status_code, 200)
+                result = response.json()
+                self.assertEqual(result["sources"], [{"id": runbook["id"], "title": runbook["title"]}])
+                self.assertIn(runbook["summary"], result["reply"])
+                for check in runbook["checks"]:
+                    self.assertIn(check["text"], result["reply"])
+                self.assertIn(runbook["handoff"], result["reply"])
+
+    def test_handoff_request_takes_priority_over_symptom(self):
+        response = self.post_chat("I need a ticket handoff for the user who cannot complete MFA.")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual([source["id"] for source in response.json()["sources"]], ["handoff"])
+
+    def test_specific_symptom_outweighs_generic_terms(self):
+        cases = (
+            ("My network is fine but the VPN connects and no internal sites load.", "vpn"),
+            ("I saw an unfamiliar sign-in and unexpected MFA prompts.", "suspicious-sign-in"),
+            ("Sign-in gives AADSTS53003 blocked by Conditional Access.", "conditional-access"),
+        )
+        for prompt, expected in cases:
+            with self.subTest(prompt=prompt):
+                response = self.post_chat(prompt)
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual([source["id"] for source in response.json()["sources"]], [expected])
 
     def test_unrelated_query_has_no_runbook_even_after_another_request(self):
         self.assertEqual(self.post_chat("My DNS resolution fails.").status_code, 200)
