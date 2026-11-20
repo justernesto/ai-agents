@@ -11,8 +11,12 @@ import {
   samples,
 } from "./demo";
 import type { ConversationMessage, Mode, Reply, Runbook } from "./demo";
+import { HOSTED_OPS_API_PATH, HOSTED_OPS_API_URL } from "./api/ops/config";
 
-const apiUrl = (process.env.NEXT_PUBLIC_OPS_API_URL || "https://ops-copilot-api.vercel.app").trim().replace(/\/+$/, "");
+const configuredApiUrl = process.env.NEXT_PUBLIC_OPS_API_URL?.trim().replace(/\/+$/, "");
+const apiUrl = configuredApiUrl && configuredApiUrl !== HOSTED_OPS_API_URL
+  ? configuredApiUrl
+  : HOSTED_OPS_API_PATH;
 const repoUrl = "https://github.com/justernesto/ai-agents";
 const runbookCategories = [...new Set(runbooks.map(({ category }) => category))].sort();
 const searchableRunbooks = runbooks.map((runbook) => ({

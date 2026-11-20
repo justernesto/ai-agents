@@ -86,7 +86,9 @@ The `message` field accepts up to 1,200 characters. The optional `history` field
 
 ## Hosting
 
-The Next.js app can be deployed with `chat-ui` as the Vercel project root. Leave `NEXT_PUBLIC_OPS_API_URL` unset for the browser demo. To connect a hosted demo API, set it to the API's public HTTPS URL and add the frontend origin to `OPS_ALLOWED_ORIGINS` in the backend environment. Use a comma to separate multiple allowed origins. Local development allows `localhost:3000` and `127.0.0.1:3000` by default.
+The Next.js app can be deployed with `chat-ui` as the Vercel project root. The browser demo is the initial mode. With the default hosted API, **Connect configured API** sends health and chat requests through the app's own domain, so generated Vercel URLs can use the same backend.
+
+For a custom API, set `NEXT_PUBLIC_OPS_API_URL` to its URL and add the frontend origin to `OPS_ALLOWED_ORIGINS` in that backend's environment. Use a comma to separate multiple allowed origins. Local development allows `localhost:3000` and `127.0.0.1:3000` by default.
 
 Keep Gemini testing on a local bind. The prototype has no user authentication or per-user API quotas.
 
