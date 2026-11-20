@@ -6,3 +6,9 @@ __pycache__/
 .env.*
 !.env.example
 history.json
+
+# Ops Copilot private configuration
+*.env
+*.env.*
+!*.env.example
+ops-copilot-private/

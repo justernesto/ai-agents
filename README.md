@@ -96,3 +96,64 @@ The tests run offline and cover grounded demo replies, input validation, convers
 cd chat-ui
 npm run build
 ```
+
+## Self-host locally with Docker Compose
+
+Ops Copilot supports local self-hosting with Docker Compose.
+
+### Requirements
+
+- Docker Desktop or Docker Engine with Docker Compose
+- Git
+- An optional Gemini API key for AI-powered prioritization
+
+### Configuration
+
+Clone the repository and create a private environment file at
+`../ops-copilot-private/backend.env`, relative to the repository root.
+
+For keyless demo mode, the file needs only:
+
+```dotenv
+OPS_ENABLE_GEMINI=0
+```
+
+To enable Gemini, set `OPS_ENABLE_GEMINI=1` and add your own
+`GEMINI_API_KEY` to that private file. `GEMINI_MODEL` is optional.
+
+Never commit the private environment file or API key.
+
+### Run
+
+From the repository root:
+
+```powershell
+docker compose -f compose.local.yaml config --quiet
+docker compose -f compose.local.yaml up -d --build
+```
+
+Open http://127.0.0.1:3000 and select "Connect configured API".
+
+The FastAPI backend is available at http://127.0.0.1:8000.
+
+### Manage the containers
+
+```powershell
+docker compose -f compose.local.yaml ps
+docker compose -f compose.local.yaml logs --tail 100
+docker compose -f compose.local.yaml stop
+docker compose -f compose.local.yaml start
+```
+
+Both published ports are bound to the local loopback interface.
+No inbound public access is configured.
+
+The containers use the `unless-stopped` restart policy. The host
+computer must remain awake with Docker running. On Windows, Docker
+Desktop can be configured to start when the user signs in.
+
+Gemini is optional. If Gemini is unavailable or its quota is exhausted,
+Ops Copilot falls back to the built-in runbook responses.
+
+This prototype does not include authentication or per-user API quotas.
+Do not expose the backend publicly without additional security controls.

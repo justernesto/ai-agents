@@ -1,0 +1,36 @@
+name: ops-copilot-local
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:8000:8000"
+    env_file:
+      - ../ops-copilot-private/backend.env
+    environment:
+      OPS_ALLOWED_ORIGINS: "http://127.0.0.1:3000,http://localhost:3000"
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./chat-ui
+      dockerfile: Dockerfile.local
+      args:
+        NEXT_PUBLIC_OPS_API_URL: "http://127.0.0.1:8000"
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
