@@ -1,5 +1,7 @@
 """FastAPI entry point for Ops Copilot."""
 
+import os
+
 from contextlib import asynccontextmanager
 from typing import Annotated, Literal
 
@@ -70,7 +72,15 @@ def create_app() -> FastAPI:
     @application.post("/chat", response_model=ChatResult)
     async def chat(body: ChatRequest, request: Request):
         history = [message.content for message in body.history if message.role == "user"]
-        return await answer(body.message, history, settings, request.app.state.provider)
+        provider = request.app.state.provider
+
+        if provider is not None and os.getenv("OPS_PUBLIC_CHAT_ENABLED") == "1":
+            from gemini_quota import reserve_gemini_slot
+
+            if not await reserve_gemini_slot():
+                provider = None
+
+        return await answer(body.message, history, settings, provider)
 
     return application
 
