@@ -1,78 +1,78 @@
-#!/usr/bin/env python3
-# agent_langchain.py
-# A LangChain-based agent using Gemini, with memory and a Wikipedia tool.
+"""FastAPI entry point for Ops Copilot."""
 
-import os
-import json
-import wikipedia
+from contextlib import asynccontextmanager
+from typing import Annotated, Literal
 
-from langchain.tools import Tool
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain.memory import ConversationBufferMemory
-from langchain.agents import initialize_agent, AgentType
-
-# --- Configuration ---
-api_key = os.getenv("GEMINI_API_KEY")
-if not api_key:
-    raise RuntimeError("Set GEMINI_API_KEY in your environment before running.")
-
-# Initialize the LLM (Gemini via Google GenAI integration)
-llm = ChatGoogleGenerativeAI(
-    model="gemini-1.5-flash-latest",
-    google_api_key=api_key,
-    temperature=0.7,
-)
-
-# Memory for conversation
-memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
-
-# --- Tool Definitions ---
-def wiki_lookup(query: str) -> str:
-    """Fetch a brief summary from Wikipedia."""
-    try:
-        return wikipedia.summary(query, sentences=2)
-    except Exception as e:
-        return f"Error fetching Wikipedia summary: {e}"
-
-tools = [
-    Tool(
-        name="Wikipedia",
-        func=wiki_lookup,
-        description="Fetches a 2-sentence summary from Wikipedia for a given topic."
-    )
-]
-
-# --- Initialize Agent ---
-agent = initialize_agent(
-    tools=tools,
-    llm=llm,
-    agent=AgentType.CONVERSATIONAL_REACT_DESCRIPTION,
-    verbose=True,
-    memory=memory,
-)
-
-from fastapi import FastAPI
+import httpx
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, StringConstraints
 
-app = FastAPI()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],     # for development; restrict this in production
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+from ops_copilot import (
+    MAX_HISTORY_CONTENT,
+    MAX_HISTORY_MESSAGES,
+    MAX_MESSAGE_LENGTH,
+    ChatResult,
+    Settings,
+    answer,
 )
+
+
+class HistoryMessage(BaseModel):
+    role: Literal["user", "assistant"]
+    content: Annotated[
+        str, StringConstraints(strip_whitespace=True, min_length=1, max_length=MAX_HISTORY_CONTENT)
+    ]
+
 
 class ChatRequest(BaseModel):
-    message: str
+    message: Annotated[
+        str, StringConstraints(strip_whitespace=True, min_length=1, max_length=MAX_MESSAGE_LENGTH)
+    ]
+    history: list[HistoryMessage] = Field(default_factory=list, max_length=MAX_HISTORY_MESSAGES)
 
-@app.post("/chat")
-async def chat_endpoint(req: ChatRequest):
-    reply = agent.run(req.message)
-    return {"reply": reply}
 
-@app.get("/")
-async def healthcheck():
-    return {"status": "ok"}
+def create_app() -> FastAPI:
+    settings = Settings.from_env()
+
+    @asynccontextmanager
+    async def lifespan(application: FastAPI):
+        application.state.provider = None
+        if not settings.gemini_key:
+            yield
+            return
+        async with httpx.AsyncClient(
+            base_url="https://generativelanguage.googleapis.com",
+            timeout=httpx.Timeout(4, connect=2),
+            limits=httpx.Limits(max_connections=8, max_keepalive_connections=4),
+        ) as provider:
+            application.state.provider = provider
+            yield
+
+    application = FastAPI(
+        title="Ops Copilot", description="IT support triage from four example runbooks.", lifespan=lifespan
+    )
+    application.add_middleware(
+        CORSMiddleware,
+        allow_origins=list(settings.allowed_origins),
+        allow_methods=["GET", "POST"],
+        allow_headers=["Content-Type"],
+    )
+
+    @application.get("/")
+    async def index():
+        return {"status": "ok"}
+
+    @application.get("/health")
+    async def health():
+        return {"status": "ok", "mode": "gemini" if settings.gemini_key else "demo"}
+
+    @application.post("/chat", response_model=ChatResult)
+    async def chat(body: ChatRequest, request: Request):
+        history = [message.content for message in body.history if message.role == "user"]
+        return await answer(body.message, history, settings, request.app.state.provider)
+
+    return application
+
+
+app = create_app()

@@ -1,0 +1,12 @@
+.git
+.venv
+**/__pycache__
+.env*
+history.json
+chat-ui/*
+!chat-ui/src
+chat-ui/src/*
+!chat-ui/src/lib
+chat-ui/src/lib/*
+!chat-ui/src/lib/runbooks.json
+tests

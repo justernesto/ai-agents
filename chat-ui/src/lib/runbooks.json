@@ -1,0 +1,50 @@
+[
+  {
+    "id": "handoff",
+    "title": "Shift handoff",
+    "summary": "Record the impact, the evidence collected, and the next action so the receiving team can pick up the issue.",
+    "keywords": ["handoff", "hand off", "ticket summary", "shift change", "escalation summary", "ticket update", "handover"],
+    "checks": [
+      {"id": "scope", "text": "Record the affected service, approximate start time and time zone, and who is affected."},
+      {"id": "evidence", "text": "Separate observed symptoms from hypotheses. Note the checks already tried and their results."},
+      {"id": "owner", "text": "Record the current owner, the next check, and when the next update is due."}
+    ],
+    "handoff": "Impact: [users or service] · Evidence: [checks and results] · Current owner: [team] · Next action: [check and time]"
+  },
+  {
+    "id": "dns",
+    "title": "DNS resolution",
+    "summary": "Separate name resolution from general connectivity and establish which resolver should answer.",
+    "keywords": ["dns", "resolver", "name resolution", "hostname", "nslookup", "nxdomain", "fqdn", "can't resolve", "cannot resolve"],
+    "checks": [
+      {"id": "scope", "text": "Confirm the exact hostname, any error, and whether another approved hostname works from the same device."},
+      {"id": "path", "text": "Check whether the affected device has approved network or VPN connectivity. Internal names may require the corporate network."},
+      {"id": "resolver", "text": "Compare the device’s configured DNS resolver and results with a known working device on the same network. Record any timeouts or name errors."}
+    ],
+    "handoff": "Record the hostname, network or VPN state, resolver tested, exact response, and whether a second device sees the same issue."
+  },
+  {
+    "id": "identity",
+    "title": "Identity and MFA",
+    "summary": "Find where sign-in fails and follow the approved recovery process for access problems.",
+    "keywords": ["mfa", "sign in", "sign-in", "login", "authenticator", "locked out", "password reset", "verification code", "identity", "authentication", "access denied"],
+    "checks": [
+      {"id": "symptom", "text": "Capture the exact sign-in stage and error. Confirm whether one app or multiple approved services are affected."},
+      {"id": "context", "text": "Ask whether the user changed devices recently and whether the expected sign-in method is still available. Never request a password or MFA code."},
+      {"id": "route", "text": "Use the organization’s identity verification and recovery workflow. Escalate unexpected prompts or unfamiliar sign-in activity through the security channel."}
+    ],
+    "handoff": "Record the affected app, error stage, and approved recovery steps attempted. Omit codes, passwords, and personal identifiers."
+  },
+  {
+    "id": "connectivity",
+    "title": "Endpoint connectivity",
+    "summary": "Work from the affected device outward to narrow down a wired, wireless, or VPN issue.",
+    "keywords": ["network", "connectivity", "wi-fi", "wifi", "wireless", "ethernet", "gateway", "vpn", "vlan", "switch port", "offline", "no internet", "packet loss"],
+    "checks": [
+      {"id": "scope", "text": "Determine whether the issue affects one device, one area, or the entire site. Compare with a nearby working device."},
+      {"id": "link", "text": "Check the wired link or wireless association and verify the device is using the expected network."},
+      {"id": "address", "text": "Verify the expected address, gateway, and VPN status. If a switch port or VLAN may be involved, coordinate with the network team."}
+    ],
+    "handoff": "Record the affected area, wired or wireless connection, the last known working time, and the checks already performed."
+  }
+]
